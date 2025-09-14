@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Family Dinner Planner</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; max-width: 600px; }
+  h1, h2 { text-align: center; }
+  .day { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+  .day label { display: block; font-weight: bold; margin-bottom: 5px; }
+  select, input[type="text"] { width: 100%; padding: 5px; margin-bottom: 5px; }
+  button { padding: 7px 10px; margin: 5px 0; }
+  .meal-library { border: 1px solid #aaa; padding: 10px; margin-top: 20px; border-radius: 5px; }
+  .meal-item { display: flex; justify-content: space-between; margin-bottom: 5px; }
+  .tag { font-size: 0.9em; color: #555; margin-left: 5px; }
+  .special-out { color: red; font-weight: bold; }
+  .special-left { color: gray; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<h1>Family Dinner Planner</h1>
+
+<div>
+  <input type="text" id="searchInput" placeholder="Search meals...">
+</div>
+
+<div id="weekContainer"></div>
+
+<button id="autoPopulateBtn">Auto-Populate Week</button>
+<button id="resetBtn">Reset Week</button>
+<button id="copyBtn">Copy to Clipboard</button>
+<button id="exportBtn">Export JSON</button>
+<input type="file" id="importFile" style="display:none;">
+<button id="importBtn">Import JSON</button>
+
+<div class="meal-library">
+  <h2>Meal Library</h2>
+  <input type="text" id="mealDesc" placeholder="Meal description">
+  <input type="text" id="mealTag" placeholder="Optional tags/notes (comma-separated)">
+  <select id="mealCategory">
+    <option value="">Select Category</option>
+  </select>
+  <button id="addMealBtn">Add Meal</button>
+  <div id="mealList"></div>
+</div>
+
+<script>
+// --- Data Storage ---
+let mealLibrary = [];
+let weekPlan = {};
+
+// Preloaded categories
+let categories = ["Italian","Mexican","American","Asian","Soups/Stews","Grill","Casserole"];
+
+// Days of the week
+const days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+
+// --- Load from localStorage ---
+function loadData() {
+  const lib = localStorage.getItem('mealLibrary');
+  if(lib) mealLibrary = JSON.parse(lib);
+  const week = localStorage.getItem('weekPlan');
+  if(week) weekPlan = JSON.parse(week);
+}
+function saveData() {
+  localStorage.setItem('mealLibrary', JSON.stringify(mealLibrary));
+  localStorage.setItem('weekPlan', JSON.stringify(weekPlan));
+}
+
+// --- Populate category dropdown ---
+function updateCategoryDropdown() {
+  const select = document.getElementById('mealCategory');
+  select.innerHTML = '<option value="">Select Category</option>';
+  categories.forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat;
+    opt.textContent = cat;
+    select.appendChild(opt);
+  });
+}
+
+// --- Render week plan ---
+function renderWeek() {
+  const container = document.getElementById('weekContainer');
+  container.innerHTML = '';
+  days.forEach(day => {
+    const div = document.createElement('div');
+    div.className = 'day';
+    const label = document.createElement('label');
+    label.textContent = day;
+    div.appendChild(label);
+    const select = document.createElement('select');
+    select.dataset.day = day;
+    // default options
+    const defaultOpts = ["","Out-to-eat","Leftover"];
+    defaultOpts.forEach(opt => {
+      const o = document.createElement('option');
+      o.value = opt;
+      o.textContent = opt;
+      if(opt === "Out-to-eat") o.className="special-out";
+      if(opt === "Leftover") o.className="special-left";
+      select.appendChild(o);
+    });
+    // meal library options (filtered)
+    const filteredMeals = mealLibrary.filter(m => {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      return m.description.toLowerCase().includes(search);
+    });
+    filteredMeals.forEach(m => {
+      const o = document.createElement('option');
+      o.value = m.description;
+      o.textContent = m.description;
+      select.appendChild(o);
+    });
+    if(weekPlan[day]) select.value = weekPlan[day];
+    select.addEventListener('change', e => {
+      weekPlan[day] = e.target.value;
+      saveData();
+      renderTags();
+    });
+    div.appendChild(select);
+    const tagDiv = document.createElement('div');
+    tagDiv.id = day+'-tag';
+    div.appendChild(tagDiv);
+    container.appendChild(div);
+  });
+  renderTags();
+}
+
+// --- Render tags/notes after selection ---
+function renderTags() {
+  days.forEach(day => {
+    const tagDiv = document.getElementById(day+'-tag');
+    const selected = weekPlan[day];
+    if(!selected) { tagDiv.textContent=''; return; }
+    const meal = mealLibrary.find(m => m.description===selected);
+    tagDiv.textContent = meal && meal.tags ? 'Tags: '+meal.tags.join(', ') : '';
+  });
+}
+
+// --- Render Meal Library ---
+function renderMealLibrary() {
+  const list = document.getElementById('mealList');
+  list.innerHTML = '';
+  mealLibrary.forEach((m, idx) => {
+    const div = document.createElement('div');
+    div.className = 'meal-item';
+    div.textContent = `${m.description} [${m.category}]`;
+    if(m.tags && m.tags.length>0) div.textContent += ' (Tags: '+m.tags.join(', ')+')';
+    const editBtn = document.createElement('button');
+    editBtn.textContent = 'Edit';
+    editBtn.onclick = ()=>editMeal(idx);
+    const delBtn = document.createElement('button');
+    delBtn.textContent = 'Delete';
+    delBtn.onclick = ()=>deleteMeal(idx);
+    div.appendChild(editBtn);
+    div.appendChild(delBtn);
+    list.appendChild(div);
+  });
+}
+
+// --- Add Meal ---
+function addMeal() {
+  const desc = document.getElementById('mealDesc').value.trim();
+  if(!desc) return alert("Enter a meal description");
+  const tags = document.getElementById('mealTag').value.split(',').map(t=>t.trim()).filter(t=>t);
+  const category = document.getElementById('mealCategory').value || 'Uncategorized';
+  if(!categories.includes(category)) categories.push(category);
+  mealLibrary.push({description: desc, tags, category});
+  saveData();
+  updateCategoryDropdown();
+  renderMealLibrary();
+  renderWeek();
+  document.getElementById('mealDesc').value='';
+  document.getElementById('mealTag').value='';
+}
+
+// --- Edit / Delete Meal ---
+function editMeal(idx) {
+  const m = mealLibrary[idx];
+  const newDesc = prompt("Edit description:", m.description);
+  if(!newDesc) return;
+  const newTags = prompt("Edit tags (comma-separated):", m.tags.join(','));
+  const newCat = prompt("Edit category:", m.category);
+  if(newCat && !categories.includes(newCat)) categories.push(newCat);
+  mealLibrary[idx] = {description:newDesc, tags:newTags.split(',').map(t=>t.trim()).filter(t=>t), category:newCat||'Uncategorized'};
+  saveData();
+  updateCategoryDropdown();
+  renderMealLibrary();
+  renderWeek();
+}
+function deleteMeal(idx) {
+  if(!confirm("Delete this meal?")) return;
+  mealLibrary.splice(idx,1);
+  saveData();
+  renderMealLibrary();
+  renderWeek();
+}
+
+// --- Auto-populate week ---
+function autoPopulate() {
+  // Filter out special meals and already assigned
+  const meals = mealLibrary.map(m=>m.description);
+  let availableMeals = [...meals];
+  days.forEach(day=>{
+    if(weekPlan[day]==="Out-to-eat" || weekPlan[day]==="Leftover") return; // skip
+    let options = availableMeals.filter(o=>!Object.values(weekPlan).includes(o));
+    if(options.length===0) return;
+    // Try to spread categories
+    const lastDay = days[days.indexOf(day)-1];
+    let lastCat = lastDay ? mealLibrary.find(m=>m.description===weekPlan[lastDay])?.category : null;
+    let choices = options.filter(o=>{
+      const c = mealLibrary.find(m=>m.description===o)?.category;
+      return c!==lastCat;
+    });
+    if(choices.length===0) choices = options;
+    const selected = choices[Math.floor(Math.random()*choices.length)];
+    weekPlan[day]=selected;
+    availableMeals = availableMeals.filter(m=>m!==selected);
+  });
+  saveData();
+  renderWeek();
+}
+
+// --- Reset week ---
+function resetWeek() {
+  if(!confirm("Clear all meal selections for the week?")) return;
+  weekPlan={};
+  saveData();
+  renderWeek();
+}
+
+// --- Copy to Clipboard ---
+function copyWeek() {
+  let text = "Dinner Plan:\n";
+  days.forEach(day=>{
+    text+=day+": "+(weekPlan[day]||"")+"\n";
+  });
+  navigator.clipboard.writeText(text).then(()=>alert("Copied to clipboard!"));
+}
+
+// --- Export / Import JSON ---
+function exportJSON() {
+  const data = {mealLibrary, weekPlan};
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url;
+  a.download = "dinner_planner_backup.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importJSON(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    try{
+      const data = JSON.parse(ev.target.result);
+      if(data.mealLibrary) mealLibrary = data.mealLibrary;
+      if(data.weekPlan) weekPlan = data.weekPlan;
+      saveData();
+      updateCategoryDropdown();
+      renderMealLibrary();
+      renderWeek();
+      alert("Import successful!");
+    }catch(err){
+      alert("Invalid JSON file.");
+    }
+  }
+  reader.readAsText(file);
+}
+
+// --- Search Filter ---
+document.getElementById('searchInput').addEventListener('input', renderWeek);
+
+// --- Event Listeners ---
+document.getElementById('addMealBtn').addEventListener('click', addMeal);
+document.getElementById('autoPopulateBtn').addEventListener('click', autoPopulate);
+document.getElementById('resetBtn').addEventListener('click', resetWeek);
+document.getElementById('copyBtn').addEventListener('click', copyWeek);
+document.getElementById('exportBtn').addEventListener('click', exportJSON);
+document.getElementById('importBtn').addEventListener('click', ()=>document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', importJSON);
+
+// --- Initialize ---
+loadData();
+updateCategoryDropdown();
+renderMealLibrary();
+renderWeek();
+</script>
+
+</body>
+</html>
