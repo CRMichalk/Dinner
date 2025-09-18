@@ -19,22 +19,48 @@
   }
 
   .score-summary {
-    display: flex;
-    justify-content: space-around;
     background: #222;
     color: #fff;
     border-radius: 8px;
     padding: 8px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
   }
 
-  .score-summary div {
+  .score-row {
+    display: flex;
+    justify-content: space-around;
+    margin: 4px 0;
+  }
+
+  .score-row div {
     flex: 1;
+  }
+
+  .mini-stats {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 6px 0;
+    font-size: 1em;
+  }
+
+  .mini-stats div {
+    background: #444;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 6px;
+    min-width: 60px;
+  }
+
+  .label {
+    font-size: 0.9em;
+    margin: 4px 0;
+    color: #555;
   }
 
   .counter {
     display: flex;
-    margin: 8px auto;
+    margin: 6px auto;
     max-width: 350px;
     height: 45px;
     border-radius: 8px;
@@ -69,12 +95,6 @@
     background: #ddd;
   }
 
-  .label {
-    font-size: 0.9em;
-    margin: 4px 0;
-    color: #555;
-  }
-
   button.reset {
     margin-top: 15px;
     padding: 10px 20px;
@@ -96,9 +116,16 @@
 <h1>Baseball Scoreboard</h1>
 
 <div class="score-summary">
-  <div>Away: <span id="awayScore">0</span></div>
-  <div>Inning: <span id="inningNumber">1</span> <span id="inningHalf">Top</span></div>
-  <div>Home: <span id="homeScore">0</span></div>
+  <div class="score-row">
+    <div>Away: <span id="awayScore">0</span></div>
+    <div>Inning: <span id="inningNumber">1</span> <span id="inningHalf">Top</span></div>
+    <div>Home: <span id="homeScore">0</span></div>
+  </div>
+  <div class="mini-stats">
+    <div>B: <span id="ballsMini">0</span></div>
+    <div>S: <span id="strikesMini">0</span></div>
+    <div>O: <span id="outsMini">0</span></div>
+  </div>
 </div>
 
 <div class="label">Balls</div>
@@ -159,6 +186,7 @@ function updateDisplay() {
   document.getElementById('inningHalf').textContent = inningHalf;
   document.getElementById('inningNumberControl').textContent = inningNumber;
   document.getElementById('inningHalfControl').textContent = inningHalf;
+
   document.getElementById('ballsCount').textContent = balls;
   document.getElementById('strikesCount').textContent = strikes;
   document.getElementById('outsCount').textContent = outs;
@@ -166,6 +194,11 @@ function updateDisplay() {
   document.getElementById('homeScore').textContent = runsHome;
   document.getElementById('awayScoreControl').textContent = runsAway;
   document.getElementById('homeScoreControl').textContent = runsHome;
+
+  // mini scoreboard
+  document.getElementById('ballsMini').textContent = balls;
+  document.getElementById('strikesMini').textContent = strikes;
+  document.getElementById('outsMini').textContent = outs;
 }
 
 function addBall() { balls++; if (balls >= 4) resetCount(); updateDisplay(); }
