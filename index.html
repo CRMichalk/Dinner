@@ -37,7 +37,7 @@
   .card {
     background: #fff;
     border-radius: 12px;
-    padding: 20px;
+    padding: 15px;
     font-size: 1.5em;
     margin-bottom: 10px;
     box-shadow: 0 3px 8px rgba(0,0,0,0.15);
@@ -57,10 +57,10 @@
   }
 
   .button-small {
-    font-size: 1.2em;
-    padding: 10px;
+    font-size: 1em;
+    padding: 5px 0;
     margin: 5px 0 0 0;
-    width: 45%;
+    width: 48%;
     border-radius: 8px;
     border: none;
     background: #eee;
@@ -74,7 +74,12 @@
   .half-row {
     display: flex;
     justify-content: space-between;
-    gap: 5%;
+    gap: 4%;
+  }
+
+  .top-section {
+    font-size: 1.8em;
+    margin-bottom: 10px;
   }
 
 </style>
@@ -87,7 +92,7 @@
 
   <div class="section card">
     <span class="label">Inning</span>
-    <div style="font-size:1.8em;" id="inningDisplay">
+    <div class="top-section" id="inningDisplay">
       <span id="inningNumber">1</span> <span id="inningHalf">Top</span>
     </div>
     <button class="button-small" onclick="toggleInningHalf()">Next Half</button>
@@ -100,8 +105,8 @@
       Balls<br>
       <span id="ballsCount" class="count">0</span>
       <div class="half-row">
-        <button class="button-small" onclick="addBall()">+</button>
-        <button class="button-small" onclick="subtractBall()">-</button>
+        <button class="button-small" onclick="addBall()">+ Add</button>
+        <button class="button-small" onclick="subtractBall()">- Subtract</button>
       </div>
     </div>
 
@@ -109,8 +114,8 @@
       Strikes<br>
       <span id="strikesCount" class="count">0</span>
       <div class="half-row">
-        <button class="button-small" onclick="addStrike()">+</button>
-        <button class="button-small" onclick="subtractStrike()">-</button>
+        <button class="button-small" onclick="addStrike()">+ Add</button>
+        <button class="button-small" onclick="subtractStrike()">- Subtract</button>
       </div>
     </div>
 
@@ -118,8 +123,8 @@
       Outs<br>
       <span id="outsCount" class="count">0</span>
       <div class="half-row">
-        <button class="button-small" onclick="addOut()">+</button>
-        <button class="button-small" onclick="subtractOut()">-</button>
+        <button class="button-small" onclick="addOut()">+ Add</button>
+        <button class="button-small" onclick="subtractOut()">- Subtract</button>
       </div>
     </div>
   </div>
@@ -131,8 +136,8 @@
       Away<br>
       <span id="awayScore" class="count">0</span>
       <div class="half-row">
-        <button class="button-small" onclick="addRun('away')">+</button>
-        <button class="button-small" onclick="subtractRun('away')">-</button>
+        <button class="button-small" onclick="addRun('away')">+ Add</button>
+        <button class="button-small" onclick="subtractRun('away')">- Subtract</button>
       </div>
     </div>
 
@@ -140,8 +145,8 @@
       Home<br>
       <span id="homeScore" class="count">0</span>
       <div class="half-row">
-        <button class="button-small" onclick="addRun('home')">+</button>
-        <button class="button-small" onclick="subtractRun('home')">-</button>
+        <button class="button-small" onclick="addRun('home')">+ Add</button>
+        <button class="button-small" onclick="subtractRun('home')">- Subtract</button>
       </div>
     </div>
   </div>
