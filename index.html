@@ -30,10 +30,21 @@
     display: flex;
     justify-content: space-around;
     margin: 4px 0;
+    position: relative;
   }
 
   .score-row div {
     flex: 1;
+    position: relative;
+  }
+
+  .us-label {
+    font-size: 0.7em;
+    color: yellow;
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
   }
 
   .mini-stats {
@@ -109,17 +120,32 @@
   button.reset:active {
     background: #666;
   }
+
+  .radio-team {
+    margin-bottom: 10px;
+  }
 </style>
 </head>
 <body>
 
 <h1>Baseball Scoreboard</h1>
 
+<div class="radio-team">
+  <label><input type="radio" name="team" value="away" checked onchange="setTeam(this.value)"> Away</label>
+  <label><input type="radio" name="team" value="home" onchange="setTeam(this.value)"> Home</label>
+</div>
+
 <div class="score-summary">
   <div class="score-row">
-    <div>Away: <span id="awayScore">0</span></div>
+    <div>
+      <span id="awayUs" class="us-label" style="display:none;">Us</span>
+      Away: <span id="awayScore">0</span>
+    </div>
     <div>Inning: <span id="inningNumber">1</span> <span id="inningHalf">Top</span></div>
-    <div>Home: <span id="homeScore">0</span></div>
+    <div>
+      <span id="homeUs" class="us-label" style="display:none;">Us</span>
+      Home: <span id="homeScore">0</span>
+    </div>
   </div>
   <div class="mini-stats">
     <div>B: <span id="ballsMini">0</span></div>
@@ -149,14 +175,14 @@
   <div class="increment" onclick="addOut()">+</div>
 </div>
 
-<div class="label">Away Runs</div>
+<div class="label">Away</div>
 <div class="counter">
   <div class="decrement" onclick="subtractRun('away')">-</div>
   <div class="value" id="awayScoreControl">0</div>
   <div class="increment" onclick="addRun('away')">+</div>
 </div>
 
-<div class="label">Home Runs</div>
+<div class="label">Home</div>
 <div class="counter">
   <div class="decrement" onclick="subtractRun('home')">-</div>
   <div class="value" id="homeScoreControl">0</div>
@@ -180,6 +206,26 @@ let strikes = 0;
 let outs = 0;
 let runsAway = 0;
 let runsHome = 0;
+let team = 'away';
+
+function saveState() {
+  const state = { inningNumber, inningHalf, balls, strikes, outs, runsAway, runsHome, team };
+  localStorage.setItem('scoreboardState', JSON.stringify(state));
+}
+
+function loadState() {
+  const state = JSON.parse(localStorage.getItem('scoreboardState'));
+  if (state) {
+    inningNumber = state.inningNumber;
+    inningHalf = state.inningHalf;
+    balls = state.balls;
+    strikes = state.strikes;
+    outs = state.outs;
+    runsAway = state.runsAway;
+    runsHome = state.runsHome;
+    team = state.team;
+  }
+}
 
 function updateDisplay() {
   document.getElementById('inningNumber').textContent = inningNumber;
@@ -195,10 +241,16 @@ function updateDisplay() {
   document.getElementById('awayScoreControl').textContent = runsAway;
   document.getElementById('homeScoreControl').textContent = runsHome;
 
-  // mini scoreboard
   document.getElementById('ballsMini').textContent = balls;
   document.getElementById('strikesMini').textContent = strikes;
   document.getElementById('outsMini').textContent = outs;
+
+  document.getElementById('awayUs').style.display = (team === 'away') ? 'block' : 'none';
+  document.getElementById('homeUs').style.display = (team === 'home') ? 'block' : 'none';
+
+  document.querySelector(`input[name="team"][value="${team}"]`).checked = true;
+
+  saveState();
 }
 
 function addBall() { balls++; if (balls >= 4) resetCount(); updateDisplay(); }
@@ -210,8 +262,8 @@ function subtractStrike() { if(strikes>0) strikes--; updateDisplay(); }
 function addOut() { outs++; if (outs >= 3) { outs = 0; incrementInningHalf(); } resetCount(); updateDisplay(); }
 function subtractOut() { if(outs>0) outs--; updateDisplay(); }
 
-function addRun(team) { if(team==='away') runsAway++; if(team==='home') runsHome++; updateDisplay(); }
-function subtractRun(team) { if(team==='away' && runsAway>0) runsAway--; if(team==='home' && runsHome>0) runsHome--; updateDisplay(); }
+function addRun(teamName) { if(teamName==='away') runsAway++; if(teamName==='home') runsHome++; updateDisplay(); }
+function subtractRun(teamName) { if(teamName==='away' && runsAway>0) runsAway--; if(teamName==='home' && runsHome>0) runsHome--; updateDisplay(); }
 
 function incrementInningHalf() {
   inningHalf = (inningHalf === 'Top') ? 'Bottom' : 'Top';
@@ -237,9 +289,17 @@ function resetGame() {
   balls = strikes = outs = runsAway = runsHome = 0;
   inningNumber = 1;
   inningHalf = 'Top';
+  team = 'away';
   updateDisplay();
 }
 
+function setTeam(selected) {
+  team = selected;
+  updateDisplay();
+}
+
+// Load saved state on startup
+loadState();
 updateDisplay();
 </script>
 
