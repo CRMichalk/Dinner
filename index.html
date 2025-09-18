@@ -3,65 +3,68 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Baseball Scoreboard</title>
+<title>Compact Baseball Scoreboard</title>
 <style>
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    background: #f8f8f8;
     margin: 0;
     padding: 10px;
+    background: #f8f8f8;
     text-align: center;
   }
 
   h1 {
-    margin: 20px 0;
-    font-size: 2em;
+    margin: 10px 0;
+    font-size: 1.8em;
   }
 
-  .scoreboard {
-    max-width: 450px;
-    margin: 0 auto;
-  }
-
-  .section {
-    margin-bottom: 20px;
-  }
-
-  .label {
-    font-size: 0.9em;
-    color: #555;
-    margin-bottom: 5px;
-    display: block;
-  }
-
-  .card {
+  .summary-bar {
+    display: flex;
+    justify-content: space-between;
     background: #fff;
-    border-radius: 12px;
-    padding: 15px;
-    font-size: 1.5em;
-    margin-bottom: 10px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-    cursor: pointer;
-    user-select: none;
-    transition: transform 0.1s;
+    padding: 8px 12px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    font-size: 0.95em;
   }
 
-  .card:active {
-    transform: scale(0.97);
+  .summary-item {
+    flex: 1;
+    text-align: center;
+  }
+
+  .button-card {
+    background: #fff;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    padding: 8px;
+  }
+
+  .button-card span.label {
+    display: block;
+    font-size: 0.85em;
+    margin-bottom: 3px;
+    color: #555;
   }
 
   .count {
-    display: block;
-    margin-top: 10px;
-    font-size: 1.5em;
+    font-size: 1.2em;
+    margin-bottom: 4px;
+  }
+
+  .half-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 4%;
   }
 
   .button-small {
-    font-size: 1em;
-    padding: 5px 0;
-    margin: 5px 0 0 0;
-    width: 48%;
-    border-radius: 8px;
+    flex: 1;
+    font-size: 0.9em;
+    padding: 4px 0;
+    border-radius: 6px;
     border: none;
     background: #eee;
     cursor: pointer;
@@ -71,15 +74,20 @@
     background: #ddd;
   }
 
-  .half-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 4%;
+  .reset-btn {
+    background: #ff6666;
+    color: #fff;
+    font-size: 1em;
+    padding: 6px 0;
+    border-radius: 8px;
+    border: none;
+    width: 100%;
+    cursor: pointer;
+    margin-top: 10px;
   }
 
-  .top-section {
-    font-size: 1.8em;
-    margin-bottom: 10px;
+  .reset-btn:active {
+    background: #ff4d4d;
   }
 
 </style>
@@ -88,88 +96,75 @@
 
 <h1>Baseball Scoreboard</h1>
 
-<div class="scoreboard">
-
-  <div class="section card">
-    <span class="label">Inning</span>
-    <div class="top-section" id="inningDisplay">
-      <span id="inningNumber">1</span> <span id="inningHalf">Top</span>
-    </div>
-    <button class="button-small" onclick="toggleInningHalf()">Next Half</button>
-  </div>
-
-  <div class="section">
-    <span class="label">Balls, Strikes, Outs</span>
-
-    <div class="card">
-      Balls<br>
-      <span id="ballsCount" class="count">0</span>
-      <div class="half-row">
-        <button class="button-small" onclick="addBall()">+ Add</button>
-        <button class="button-small" onclick="subtractBall()">- Subtract</button>
-      </div>
-    </div>
-
-    <div class="card">
-      Strikes<br>
-      <span id="strikesCount" class="count">0</span>
-      <div class="half-row">
-        <button class="button-small" onclick="addStrike()">+ Add</button>
-        <button class="button-small" onclick="subtractStrike()">- Subtract</button>
-      </div>
-    </div>
-
-    <div class="card">
-      Outs<br>
-      <span id="outsCount" class="count">0</span>
-      <div class="half-row">
-        <button class="button-small" onclick="addOut()">+ Add</button>
-        <button class="button-small" onclick="subtractOut()">- Subtract</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="section">
-    <span class="label">Runs</span>
-
-    <div class="card">
-      Away<br>
-      <span id="awayScore" class="count">0</span>
-      <div class="half-row">
-        <button class="button-small" onclick="addRun('away')">+ Add</button>
-        <button class="button-small" onclick="subtractRun('away')">- Subtract</button>
-      </div>
-    </div>
-
-    <div class="card">
-      Home<br>
-      <span id="homeScore" class="count">0</span>
-      <div class="half-row">
-        <button class="button-small" onclick="addRun('home')">+ Add</button>
-        <button class="button-small" onclick="subtractRun('home')">- Subtract</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="section">
-    <button class="card" onclick="resetGame()">Reset Game</button>
-  </div>
-
+<div class="summary-bar">
+  <div class="summary-item">Inning: <span id="inningNumber">1</span><span id="inningHalf">T</span></div>
+  <div class="summary-item">B: <span id="ballsCount">0</span></div>
+  <div class="summary-item">S: <span id="strikesCount">0</span></div>
+  <div class="summary-item">O: <span id="outsCount">0</span></div>
+  <div class="summary-item">Away: <span id="awayScore">0</span></div>
+  <div class="summary-item">Home: <span id="homeScore">0</span></div>
 </div>
+
+<div class="button-card">
+  <span class="label">Balls</span>
+  <span id="ballsCount2" class="count">0</span>
+  <div class="half-row">
+    <button class="button-small" onclick="addBall()">+ Add</button>
+    <button class="button-small" onclick="subtractBall()">- Subtract</button>
+  </div>
+</div>
+
+<div class="button-card">
+  <span class="label">Strikes</span>
+  <span id="strikesCount2" class="count">0</span>
+  <div class="half-row">
+    <button class="button-small" onclick="addStrike()">+ Add</button>
+    <button class="button-small" onclick="subtractStrike()">- Subtract</button>
+  </div>
+</div>
+
+<div class="button-card">
+  <span class="label">Outs</span>
+  <span id="outsCount2" class="count">0</span>
+  <div class="half-row">
+    <button class="button-small" onclick="addOut()">+ Add</button>
+    <button class="button-small" onclick="subtractOut()">- Subtract</button>
+  </div>
+</div>
+
+<div class="button-card">
+  <span class="label">Runs Away</span>
+  <span id="awayScore2" class="count">0</span>
+  <div class="half-row">
+    <button class="button-small" onclick="addRun('away')">+ Add</button>
+    <button class="button-small" onclick="subtractRun('away')">- Subtract</button>
+  </div>
+</div>
+
+<div class="button-card">
+  <span class="label">Runs Home</span>
+  <span id="homeScore2" class="count">0</span>
+  <div class="half-row">
+    <button class="button-small" onclick="addRun('home')">+ Add</button>
+    <button class="button-small" onclick="subtractRun('home')">- Subtract</button>
+  </div>
+</div>
+
+<button class="reset-btn" onclick="resetGame()">Reset Game</button>
 
 <script>
 let inningNumber = 1;
-let inningHalf = 'Top';
+let inningHalf = 'T';
 let balls = 0;
 let strikes = 0;
 let outs = 0;
 let runsAway = 0;
 let runsHome = 0;
 
-// Load saved values
+// Load saved data
 function loadData() {
   inningNumber = parseInt(localStorage.getItem('inningNumber')) || 1;
-  inningHalf = localStorage.getItem('inningHalf') || 'Top';
+  inningHalf = localStorage.getItem('inningHalf') || 'T';
   balls = parseInt(localStorage.getItem('balls')) || 0;
   strikes = parseInt(localStorage.getItem('strikes')) || 0;
   outs = parseInt(localStorage.getItem('outs')) || 0;
@@ -177,7 +172,7 @@ function loadData() {
   runsHome = parseInt(localStorage.getItem('runsHome')) || 0;
 }
 
-// Save values
+// Save data
 function saveData() {
   localStorage.setItem('inningNumber', inningNumber);
   localStorage.setItem('inningHalf', inningHalf);
@@ -188,49 +183,54 @@ function saveData() {
   localStorage.setItem('runsHome', runsHome);
 }
 
-// Update display
+// Update all displays
 function updateDisplay() {
   document.getElementById('inningNumber').textContent = inningNumber;
   document.getElementById('inningHalf').textContent = inningHalf;
   document.getElementById('ballsCount').textContent = balls;
+  document.getElementById('ballsCount2').textContent = balls;
   document.getElementById('strikesCount').textContent = strikes;
+  document.getElementById('strikesCount2').textContent = strikes;
   document.getElementById('outsCount').textContent = outs;
+  document.getElementById('outsCount2').textContent = outs;
   document.getElementById('awayScore').textContent = runsAway;
+  document.getElementById('awayScore2').textContent = runsAway;
   document.getElementById('homeScore').textContent = runsHome;
+  document.getElementById('homeScore2').textContent = runsHome;
   saveData();
 }
 
 // Balls
-function addBall() { balls++; if (balls >= 4) resetCount(); updateDisplay(); }
+function addBall() { balls++; if (balls>=4) resetCount(); updateDisplay(); }
 function subtractBall() { if(balls>0) balls--; updateDisplay(); }
 
 // Strikes
-function addStrike() { strikes++; if (strikes >= 3) resetCount(); updateDisplay(); }
+function addStrike() { strikes++; if (strikes>=3) resetCount(); updateDisplay(); }
 function subtractStrike() { if(strikes>0) strikes--; updateDisplay(); }
 
 // Outs
-function addOut() { outs++; if (outs >= 3) { outs = 0; toggleInningHalf(); } resetCount(); updateDisplay(); }
+function addOut() { outs++; if(outs>=3){ outs=0; toggleInningHalf(); } resetCount(); updateDisplay(); }
 function subtractOut() { if(outs>0) outs--; updateDisplay(); }
 
 // Runs
-function addRun(team) { if(team==='away') runsAway++; if(team==='home') runsHome++; updateDisplay(); }
-function subtractRun(team) { if(team==='away' && runsAway>0) runsAway--; if(team==='home' && runsHome>0) runsHome--; updateDisplay(); }
+function addRun(team){ if(team==='away') runsAway++; if(team==='home') runsHome++; updateDisplay(); }
+function subtractRun(team){ if(team==='away' && runsAway>0) runsAway--; if(team==='home' && runsHome>0) runsHome--; updateDisplay(); }
 
-// Inning
-function toggleInningHalf() {
-  inningHalf = (inningHalf === 'Top') ? 'Bottom' : 'Top';
-  if (inningHalf === 'Top') inningNumber++;
+// Inning toggle
+function toggleInningHalf(){
+  inningHalf = (inningHalf==='T') ? 'B' : 'T';
+  if(inningHalf==='T') inningNumber++;
   updateDisplay();
 }
 
 // Reset balls/strikes
-function resetCount() { balls = 0; strikes = 0; }
+function resetCount(){ balls=0; strikes=0; }
 
 // Reset entire game
-function resetGame() {
-  balls = strikes = outs = runsAway = runsHome = 0;
-  inningNumber = 1;
-  inningHalf = 'Top';
+function resetGame(){
+  balls=strikes=outs=runsAway=runsHome=0;
+  inningNumber=1;
+  inningHalf='T';
   updateDisplay();
 }
 
