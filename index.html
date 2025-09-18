@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Compact Baseball Scoreboard</title>
 <style>
   body {
@@ -11,6 +11,7 @@
     padding: 10px;
     background: #f8f8f8;
     text-align: center;
+    touch-action: manipulation; /* prevent zoom on tap */
   }
 
   h1 {
@@ -105,6 +106,17 @@
   <div class="summary-item">Home: <span id="homeScore">0</span></div>
 </div>
 
+<!-- Inning control -->
+<div class="button-card">
+  <span class="label">Inning</span>
+  <span id="inningNumber2" class="count">1</span><span id="inningHalf2">T</span>
+  <div class="half-row">
+    <button class="button-small" onclick="incrementInning()">+ Next</button>
+    <button class="button-small" onclick="decrementInning()">- Prev</button>
+  </div>
+  <button class="button-small" onclick="toggleInningHalf()">Toggle Half</button>
+</div>
+
 <div class="button-card">
   <span class="label">Balls</span>
   <span id="ballsCount2" class="count">0</span>
@@ -187,6 +199,8 @@ function saveData() {
 function updateDisplay() {
   document.getElementById('inningNumber').textContent = inningNumber;
   document.getElementById('inningHalf').textContent = inningHalf;
+  document.getElementById('inningNumber2').textContent = inningNumber;
+  document.getElementById('inningHalf2').textContent = inningHalf;
   document.getElementById('ballsCount').textContent = balls;
   document.getElementById('ballsCount2').textContent = balls;
   document.getElementById('strikesCount').textContent = strikes;
@@ -216,12 +230,10 @@ function subtractOut() { if(outs>0) outs--; updateDisplay(); }
 function addRun(team){ if(team==='away') runsAway++; if(team==='home') runsHome++; updateDisplay(); }
 function subtractRun(team){ if(team==='away' && runsAway>0) runsAway--; if(team==='home' && runsHome>0) runsHome--; updateDisplay(); }
 
-// Inning toggle
-function toggleInningHalf(){
-  inningHalf = (inningHalf==='T') ? 'B' : 'T';
-  if(inningHalf==='T') inningNumber++;
-  updateDisplay();
-}
+// Inning controls
+function incrementInning() { inningNumber++; updateDisplay(); }
+function decrementInning() { if(inningNumber>1) inningNumber--; updateDisplay(); }
+function toggleInningHalf(){ inningHalf = (inningHalf==='T') ? 'B' : 'T'; updateDisplay(); }
 
 // Reset balls/strikes
 function resetCount(){ balls=0; strikes=0; }
