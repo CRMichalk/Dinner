@@ -9,7 +9,7 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     background: #f8f8f8;
     margin: 0;
-    padding: 0;
+    padding: 10px;
     text-align: center;
   }
 
@@ -19,9 +19,8 @@
   }
 
   .scoreboard {
-    max-width: 400px;
-    margin: 20px auto;
-    padding: 20px;
+    max-width: 450px;
+    margin: 0 auto;
   }
 
   .section {
@@ -29,23 +28,18 @@
   }
 
   .label {
-    font-size: 0.8em;
+    font-size: 0.9em;
     color: #555;
-  }
-
-  .button-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    margin-top: 10px;
+    margin-bottom: 5px;
+    display: block;
   }
 
   .card {
-    flex: 1;
     background: #fff;
-    border-radius: 10px;
-    padding: 15px 0;
+    border-radius: 12px;
+    padding: 20px;
     font-size: 1.5em;
+    margin-bottom: 10px;
     box-shadow: 0 3px 8px rgba(0,0,0,0.15);
     cursor: pointer;
     user-select: none;
@@ -53,26 +47,34 @@
   }
 
   .card:active {
-    transform: scale(0.95);
+    transform: scale(0.97);
   }
 
   .count {
     display: block;
-    margin-top: 5px;
-    font-size: 1.2em;
+    margin-top: 10px;
+    font-size: 1.5em;
   }
 
   .button-small {
-    font-size: 1em;
-    padding: 5px 0;
-    margin-top: 5px;
+    font-size: 1.2em;
+    padding: 10px;
+    margin: 5px 0 0 0;
+    width: 45%;
+    border-radius: 8px;
+    border: none;
     background: #eee;
-    border-radius: 5px;
+    cursor: pointer;
   }
 
-  .top-section {
-    font-size: 1.5em;
-    margin-bottom: 20px;
+  .button-small:active {
+    background: #ddd;
+  }
+
+  .half-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 5%;
   }
 
 </style>
@@ -83,30 +85,39 @@
 
 <div class="scoreboard">
 
-  <div class="section top-section">
-    <span class="label">Inning</span><br>
-    <span id="inningNumber">1</span> <span id="inningHalf">Top</span><br>
+  <div class="section card">
+    <span class="label">Inning</span>
+    <div style="font-size:1.8em;" id="inningDisplay">
+      <span id="inningNumber">1</span> <span id="inningHalf">Top</span>
+    </div>
     <button class="button-small" onclick="toggleInningHalf()">Next Half</button>
   </div>
 
   <div class="section">
-    <div class="label">Balls, Strikes, Outs</div>
-    <div class="button-row">
-      <div class="card">
-        Balls<br>
-        <span id="ballsCount" class="count">0</span>
+    <span class="label">Balls, Strikes, Outs</span>
+
+    <div class="card">
+      Balls<br>
+      <span id="ballsCount" class="count">0</span>
+      <div class="half-row">
         <button class="button-small" onclick="addBall()">+</button>
         <button class="button-small" onclick="subtractBall()">-</button>
       </div>
-      <div class="card">
-        Strikes<br>
-        <span id="strikesCount" class="count">0</span>
+    </div>
+
+    <div class="card">
+      Strikes<br>
+      <span id="strikesCount" class="count">0</span>
+      <div class="half-row">
         <button class="button-small" onclick="addStrike()">+</button>
         <button class="button-small" onclick="subtractStrike()">-</button>
       </div>
-      <div class="card">
-        Outs<br>
-        <span id="outsCount" class="count">0</span>
+    </div>
+
+    <div class="card">
+      Outs<br>
+      <span id="outsCount" class="count">0</span>
+      <div class="half-row">
         <button class="button-small" onclick="addOut()">+</button>
         <button class="button-small" onclick="subtractOut()">-</button>
       </div>
@@ -114,24 +125,30 @@
   </div>
 
   <div class="section">
-    <div class="label">Runs</div>
-    <div class="button-row">
-      <div class="card">
-        Away<br>
-        <span id="awayScore" class="count">0</span>
+    <span class="label">Runs</span>
+
+    <div class="card">
+      Away<br>
+      <span id="awayScore" class="count">0</span>
+      <div class="half-row">
         <button class="button-small" onclick="addRun('away')">+</button>
         <button class="button-small" onclick="subtractRun('away')">-</button>
       </div>
-      <div class="card">
-        Home<br>
-        <span id="homeScore" class="count">0</span>
+    </div>
+
+    <div class="card">
+      Home<br>
+      <span id="homeScore" class="count">0</span>
+      <div class="half-row">
         <button class="button-small" onclick="addRun('home')">+</button>
         <button class="button-small" onclick="subtractRun('home')">-</button>
       </div>
     </div>
   </div>
 
-  <button class="card" onclick="resetGame()">Reset Game</button>
+  <div class="section">
+    <button class="card" onclick="resetGame()">Reset Game</button>
+  </div>
 
 </div>
 
@@ -144,7 +161,7 @@ let outs = 0;
 let runsAway = 0;
 let runsHome = 0;
 
-// Load saved values from localStorage
+// Load saved values
 function loadData() {
   inningNumber = parseInt(localStorage.getItem('inningNumber')) || 1;
   inningHalf = localStorage.getItem('inningHalf') || 'Top';
@@ -155,7 +172,7 @@ function loadData() {
   runsHome = parseInt(localStorage.getItem('runsHome')) || 0;
 }
 
-// Save current values to localStorage
+// Save values
 function saveData() {
   localStorage.setItem('inningNumber', inningNumber);
   localStorage.setItem('inningHalf', inningHalf);
@@ -166,6 +183,7 @@ function saveData() {
   localStorage.setItem('runsHome', runsHome);
 }
 
+// Update display
 function updateDisplay() {
   document.getElementById('inningNumber').textContent = inningNumber;
   document.getElementById('inningHalf').textContent = inningHalf;
@@ -201,10 +219,7 @@ function toggleInningHalf() {
 }
 
 // Reset balls/strikes
-function resetCount() {
-  balls = 0;
-  strikes = 0;
-}
+function resetCount() { balls = 0; strikes = 0; }
 
 // Reset entire game
 function resetGame() {
