@@ -9,7 +9,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans
 
 .scoreboard { background:#e0f0ff; border-radius:16px; padding:8px; width:100%; max-width:440px; box-shadow:0 4px 10px rgba(0,0,0,0.1); margin-bottom:8px; display:flex; flex-direction:column; align-items:center; }
 
-h1 { margin:0 0 4px 0; font-size:1.2em; color:#333; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+h1 { margin:0 0 4px 0; font-size:1.1em; color:#333; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
 .mini-stats { display:flex; justify-content:space-around; width:100%; margin-bottom:6px; }
 .circles { display:flex; gap:3px; }
@@ -25,7 +25,7 @@ table.line-score td.team { font-weight:bold; background:#f0f4f8; position:relati
 .team-us { font-size:0.75em; color:gold; margin-left:3px; }
 
 .grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; width:100%; max-width:440px; }
-.button { background:#4a90e2; color:#fff; border-radius:12px; text-align:center; cursor:pointer; user-select:none; display:flex; flex-direction:column; justify-content:center; align-items:center; height:75px; font-size:1.1em; transition: background 0.15s; box-shadow:0 2px 4px rgba(0,0,0,0.2); }
+.button { background:#4a90e2; color:#fff; border-radius:12px; text-align:center; cursor:pointer; user-select:none; display:flex; flex-direction:column; justify-content:center; align-items:center; height:70px; font-size:1.1em; transition: background 0.15s; box-shadow:0 2px 4px rgba(0,0,0,0.2); }
 .button span.label { font-size:0.9em; color:#fff; margin-bottom:4px; }
 .button span.value { font-size:1.5em; }
 .button.pressed { background:#357ab7; }
@@ -38,6 +38,7 @@ button.reset:active { background:#555; }
 #teamSelectModal div { background:#fff; padding:16px; border-radius:12px; text-align:center; }
 #teamSelectModal button { margin:5px; padding:8px 16px; font-size:0.95em; cursor:pointer; background:#4a90e2; color:#fff; border:none; border-radius:8px; }
 #teamSelectModal button:hover { background:#357ab7; }
+
 </style>
 </head>
 <body>
@@ -137,43 +138,48 @@ function updateLineScoreTable(){
   for(let i=0;i<maxInning;i++){
     const awayRun=runsPerInningAway[i]||0, homeRun=runsPerInningHome[i]||0;
     totalAway+=awayRun; totalHome+=homeRun;
-    tbody.rows[0].innerHTML+=`<td>${awayRun}</td>`; 
+    tbody.rows[0].innerHTML+=`<td>${awayRun}</td>`;
     tbody.rows[1].innerHTML+=`<td>${homeRun}</td>`;
   }
-  tbody.rows[0].innerHTML+=`<td>${totalAway}</td>`; 
+  tbody.rows[0].innerHTML+=`<td>${totalAway}</td>`;
   tbody.rows[1].innerHTML+=`<td>${totalHome}</td>`;
 }
 
 function updateCircles(){
-  const drawCircles=(containerId,max,count)=>{
+  const fillCircles=(num,containerId)=>{
     const container=document.getElementById(containerId);
     container.innerHTML='';
-    for(let i=0;i<max;i++){
-      const div=document.createElement('div');
-      div.className='circle'+(i<count?' filled':'');
-      container.appendChild(div);
+    for(let i=0;i<4;i++){
+      const c=document.createElement('div');
+      c.className='circle'+(i<num?' filled':'');
+      container.appendChild(c);
     }
-  }
-  drawCircles('ballsCircles',4,balls);
-  drawCircles('strikesCircles',3,strikes);
-  drawCircles('outsCircles',3,outs);
+  };
+  fillCircles(balls,'ballsCircles');
+  fillCircles(strikes,'strikesCircles');
+  fillCircles(outs,'outsCircles');
 }
 
 function updateDisplay(){
-  document.getElementById('ballsCount').textContent = balls;
-  document.getElementById('strikesCount').textContent = strikes;
-  document.getElementById('outsCount').textContent = outs;
+  document.getElementById('ballsCount').textContent=balls;
+  document.getElementById('strikesCount').textContent=strikes;
+  document.getElementById('outsCount').textContent=outs;
   document.getElementById('inningNumberDisplay').textContent=`${inningHalf} ${inningNumber}`;
+
+  // Total runs on buttons
+  const totalAway=runsPerInningAway.reduce((a,b)=>a+b,0);
+  const totalHome=runsPerInningHome.reduce((a,b)=>a+b,0);
+  document.querySelector('#awayBtn .value').textContent=totalAway;
+  document.querySelector('#homeBtn .value').textContent=totalHome;
+
   updateCircles();
   updateLineScoreTable();
 }
 
 function addBall(){ startGameClock(); balls++; if(balls>=4){ balls=0; strikes=0; addOut(); } updateDisplay(); }
 function decrementBall(){ if(balls>0){ balls--; haptic(); updateDisplay(); } }
-
 function addStrike(){ startGameClock(); strikes++; if(strikes>=3){ strikes=0; balls=0; addOut(); } updateDisplay(); }
 function decrementStrike(){ if(strikes>0){ strikes--; haptic(); updateDisplay(); } }
-
 function addOut(){ outs++; if(outs>=3){ outs=0; incrementInningHalf(); } balls=strikes=0; updateDisplay(); haptic(); }
 function decrementOut(){ if(outs>0){ outs--; haptic(); updateDisplay(); } }
 
@@ -184,7 +190,6 @@ function addRun(teamName){
   if(teamName==='home'){ if(!runsPerInningHome[index]) runsPerInningHome[index]=0; runsPerInningHome[index]++; }
   haptic(); updateDisplay();
 }
-
 function decrementRun(teamName){
   const index=inningNumber-1;
   if((teamName==='away' && inningHalf==='Bottom')||(teamName==='home' && inningHalf==='Top')) return;
@@ -194,43 +199,17 @@ function decrementRun(teamName){
 }
 
 function incrementInningHalf(){ inningHalf=(inningHalf==='Top')?'Bottom':'Top'; if(inningHalf==='Top') inningNumber++; }
+function resetGame(){ balls=strikes=outs=0; inningNumber=1; inningHalf='Top'; runsPerInningAway=[0]; runsPerInningHome=[0]; gameStarted=false; clearInterval(clockInterval); clockInterval=null; document.getElementById('gameClock').textContent="00:00"; document.getElementById('startTimestamp').textContent=''; updateSystemDate(); updateDisplay(); document.getElementById('teamSelectModal').style.display='flex'; }
 
-function resetGame(){
-  balls=strikes=outs=0; inningNumber=1; inningHalf='Top';
-  runsPerInningAway=[0]; runsPerInningHome=[0];
-  gameStarted=false; clearInterval(clockInterval); clockInterval=null; document.getElementById('gameClock').textContent="00:00"; document.getElementById('startTimestamp').textContent='';
-  updateSystemDate();
-  updateDisplay();
-  document.getElementById('teamSelectModal').style.display='flex';
-}
-
-// Long press helper for mobile (increment on tap, decrement on long press)
+// Long press helper
 function addLongPress(btn, addFunc, decFunc){
-  let timer=null, touchActive=false;
-
-  btn.addEventListener('mousedown', e=>{
-    e.preventDefault();
-    if(touchActive) return;
-    timer=setTimeout(()=>{ decFunc(); },600);
-  });
-  btn.addEventListener('mouseup', e=>{
-    if(touchActive) return;
-    clearTimeout(timer);
-    addFunc();
-  });
-  btn.addEventListener('touchstart', e=>{
-    e.preventDefault();
-    touchActive=true;
-    timer=setTimeout(()=>{ decFunc(); },600);
-  });
-  btn.addEventListener('touchend', e=>{
-    clearTimeout(timer);
-    addFunc();
-    setTimeout(()=>{ touchActive=false; },50);
-  });
+  let timer=null; let longPressActive=false;
+  const startPress=e=>{ e.preventDefault(); longPressActive=false; timer=setTimeout(()=>{ decFunc(); longPressActive=true; },600); };
+  const endPress=e=>{ e.preventDefault(); clearTimeout(timer); if(!longPressActive) addFunc(); };
+  btn.addEventListener('mousedown', startPress); btn.addEventListener('mouseup', endPress); btn.addEventListener('mouseleave', e=>clearTimeout(timer));
+  btn.addEventListener('touchstart', startPress); btn.addEventListener('touchend', endPress);
 }
 
-// Attach buttons
 document.addEventListener('DOMContentLoaded',()=>{
   addLongPress(document.getElementById('ballsBtn'), addBall, decrementBall);
   addLongPress(document.getElementById('strikesBtn'), addStrike, decrementStrike);
