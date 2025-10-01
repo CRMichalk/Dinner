@@ -5,303 +5,228 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Baseball Scoreboard</title>
 <style>
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    background: #f8f8f8;
-    margin: 0;
-    padding: 10px;
-    text-align: center;
-  }
-
-  h1 {
-    margin: 10px 0;
-    font-size: 1.5em;
-  }
-
-  .score-summary {
-    background: #222;
-    color: #fff;
-    border-radius: 8px;
-    padding: 8px;
-    margin-bottom: 10px;
-  }
-
-  .score-row {
-    display: flex;
-    justify-content: space-around;
-    margin: 4px 0;
-    position: relative;
-  }
-
-  .score-row div {
-    flex: 1;
-    position: relative;
-  }
-
-  .us-label {
-    font-size: 0.7em;
-    color: yellow;
-    position: absolute;
-    top: -12px;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-
-  .mini-stats {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin: 6px 0;
-    font-size: 1em;
-  }
-
-  .mini-stats div {
-    background: #444;
-    color: #fff;
-    padding: 4px 10px;
-    border-radius: 6px;
-    min-width: 60px;
-  }
-
-  .label {
-    font-size: 0.9em;
-    margin: 4px 0;
-    color: #555;
-  }
-
-  .counter {
-    display: flex;
-    margin: 6px auto;
-    max-width: 350px;
-    height: 45px;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    font-size: 1.2em;
-  }
-
-  .counter div {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    user-select: none;
-  }
-
-  .counter .decrement {
-    background: #eee;
-  }
-
-  .counter .value {
-    background: #fff;
-    font-weight: bold;
-  }
-
-  .counter .increment {
-    background: #eee;
-  }
-
-  .counter div:active {
-    background: #ddd;
-  }
-
-  button.reset {
-    margin-top: 15px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    background: #444;
-    color: #fff;
-    font-size: 1em;
-    cursor: pointer;
-  }
-
-  button.reset:active {
-    background: #666;
-  }
-
-  .radio-team {
-    margin-bottom: 10px;
-  }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; margin:0; padding:5px; display:flex; flex-direction:column; align-items:center; height:100vh; background:#f8f8f8; }
+h1 { margin:5px 0; font-size:1.4em; text-align:center; }
+.mini-stats { display:flex; justify-content:space-around; width:100%; max-width:420px; margin-bottom:5px; }
+.circles { display:flex; gap:4px; }
+.circles .circle { width:12px; height:12px; border-radius:50%; border:1px solid #000; background:#ddd; }
+.circles .circle.filled { background:#000; }
+table.line-score { width:100%; max-width:420px; border-collapse:collapse; margin-bottom:5px; text-align:center; font-size:0.9em; }
+table.line-score th, table.line-score td { border:1px solid #444; padding:4px 2px; }
+table.line-score th { background:#222; color:#fff; }
+table.line-score td.team { font-weight:bold; background:#333; color:#fff; min-width:30px; position:relative; }
+.team-us { font-size:1em; color:yellow; margin-left:5px; }
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; width:100%; max-width:420px; margin-bottom:5px; }
+.button { background:#444; color:#fff; border-radius:8px; text-align:center; cursor:pointer; user-select:none; display:flex; flex-direction:column; justify-content:center; align-items:center; height:90px; font-size:1.2em; transition: background 0.15s; }
+.button span.label { font-size:1em; color:#ccc; margin-bottom:5px; }
+.button span.value { font-size:2em; }
+.button.pressed { background:#666; }
+.button.disabled { background:#777; cursor:not-allowed; }
+button.reset { margin-top:5px; padding:10px 20px; border:none; border-radius:8px; background:#222; color:#fff; font-size:1.2em; cursor:pointer; width:90%; max-width:420px; }
+button.reset:active { background:#555; }
+.clock-container { display:flex; justify-content:space-between; width:100%; max-width:420px; font-size:1em; margin-bottom:5px; }
+#teamSelectModal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:flex; justify-content:center; align-items:center; z-index:100; }
+#teamSelectModal div { background:#fff; padding:20px; border-radius:8px; text-align:center; }
+#teamSelectModal button { margin:5px; padding:10px 20px; font-size:1em; cursor:pointer; }
 </style>
 </head>
 <body>
 
-<h1>Baseball Scoreboard</h1>
+<h1 id="systemDate"></h1>
 
-<div class="radio-team">
-  <label><input type="radio" name="team" value="away" checked onchange="setTeam(this.value)"> Away</label>
-  <label><input type="radio" name="team" value="home" onchange="setTeam(this.value)"> Home</label>
+<!-- Balls/Strikes/Outs visual circles above scoreboard -->
+<div class="mini-stats">
+  <div>B: <div class="circles" id="ballsCircles"></div></div>
+  <div>S: <div class="circles" id="strikesCircles"></div></div>
+  <div>O: <div class="circles" id="outsCircles"></div></div>
 </div>
 
-<div class="score-summary">
-  <div class="score-row">
-    <div>
-      <span id="awayUs" class="us-label" style="display:none;">Us</span>
-      Away: <span id="awayScore">0</span>
-    </div>
-    <div>Inning: <span id="inningNumber">1</span> <span id="inningHalf">Top</span></div>
-    <div>
-      <span id="homeUs" class="us-label" style="display:none;">Us</span>
-      Home: <span id="homeScore">0</span>
-    </div>
-  </div>
-  <div class="mini-stats">
-    <div>B: <span id="ballsMini">0</span></div>
-    <div>S: <span id="strikesMini">0</span></div>
-    <div>O: <span id="outsMini">0</span></div>
-  </div>
+<!-- Clock and start timestamp same line -->
+<div class="clock-container">
+  <div>Clock: <span id="gameClock">00:00</span></div>
+  <div id="startTimestamp"></div>
 </div>
 
-<div class="label">Balls</div>
-<div class="counter">
-  <div class="decrement" onclick="subtractBall()">-</div>
-  <div class="value" id="ballsCount">0</div>
-  <div class="increment" onclick="addBall()">+</div>
-</div>
+<!-- Line score table -->
+<table class="line-score">
+  <thead>
+    <tr id="inningHeader"><th>Team</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="team" id="awayCell">Away <span class="team-us" id="awayUs" style="display:none;">(Us)</span></td></tr>
+    <tr><td class="team" id="homeCell">Home <span class="team-us" id="homeUs" style="display:none;">(Us)</span></td></tr>
+  </tbody>
+</table>
 
-<div class="label">Strikes</div>
-<div class="counter">
-  <div class="decrement" onclick="subtractStrike()">-</div>
-  <div class="value" id="strikesCount">0</div>
-  <div class="increment" onclick="addStrike()">+</div>
-</div>
-
-<div class="label">Outs</div>
-<div class="counter">
-  <div class="decrement" onclick="subtractOut()">-</div>
-  <div class="value" id="outsCount">0</div>
-  <div class="increment" onclick="addOut()">+</div>
-</div>
-
-<div class="label">Away</div>
-<div class="counter">
-  <div class="decrement" onclick="subtractRun('away')">-</div>
-  <div class="value" id="awayScoreControl">0</div>
-  <div class="increment" onclick="addRun('away')">+</div>
-</div>
-
-<div class="label">Home</div>
-<div class="counter">
-  <div class="decrement" onclick="subtractRun('home')">-</div>
-  <div class="value" id="homeScoreControl">0</div>
-  <div class="increment" onclick="addRun('home')">+</div>
-</div>
-
-<div class="label">Inning</div>
-<div class="counter">
-  <div class="decrement" onclick="decrementInning()">-</div>
-  <div class="value"><span id="inningNumberControl">1</span> <span id="inningHalfControl">Top</span></div>
-  <div class="increment" onclick="incrementInning()">+</div>
+<!-- Buttons grid -->
+<div class="grid">
+  <div class="button" id="ballsBtn"><span class="label">Balls</span><span class="value" id="ballsCount">0</span></div>
+  <div class="button" id="awayBtn"><span class="label">Away</span><span class="value">0</span></div>
+  <div class="button" id="strikesBtn"><span class="label">Strikes</span><span class="value" id="strikesCount">0</span></div>
+  <div class="button" id="homeBtn"><span class="label">Home</span><span class="value">0</span></div>
+  <div class="button" id="outsBtn"><span class="label">Outs</span><span class="value" id="outsCount">0</span></div>
+  <div class="button" id="inningBtn"><span class="label">Inning</span><span class="value" id="inningNumberDisplay">Top 1</span></div>
 </div>
 
 <button class="reset" onclick="resetGame()">Reset Game</button>
 
+<!-- Team selection modal -->
+<div id="teamSelectModal">
+  <div>
+    <p>Select your team:</p>
+    <button onclick="chooseTeam('away')">Away</button>
+    <button onclick="chooseTeam('home')">Home</button>
+  </div>
+</div>
+
 <script>
-let inningNumber = 1;
-let inningHalf = 'Top';
-let balls = 0;
-let strikes = 0;
-let outs = 0;
-let runsAway = 0;
-let runsHome = 0;
-let team = 'away';
+let inningNumber=1, inningHalf='Top', balls=0, strikes=0, outs=0;
+let team=null;
+let runsPerInningAway=[0], runsPerInningHome=[0];
+let gameStarted=false, gameStartTime=null, clockInterval=null;
 
-function saveState() {
-  const state = { inningNumber, inningHalf, balls, strikes, outs, runsAway, runsHome, team };
-  localStorage.setItem('scoreboardState', JSON.stringify(state));
+// Display system date with day of week
+function updateSystemDate(){
+  const now=new Date();
+  const options={weekday:'long', year:'numeric', month:'long', day:'numeric'};
+  document.getElementById('systemDate').textContent=now.toLocaleDateString(undefined,options);
 }
+updateSystemDate();
 
-function loadState() {
-  const state = JSON.parse(localStorage.getItem('scoreboardState'));
-  if (state) {
-    inningNumber = state.inningNumber;
-    inningHalf = state.inningHalf;
-    balls = state.balls;
-    strikes = state.strikes;
-    outs = state.outs;
-    runsAway = state.runsAway;
-    runsHome = state.runsHome;
-    team = state.team;
+// Haptic feedback
+function haptic(){ if(navigator.vibrate) navigator.vibrate(50); }
+
+// Start game clock
+function startGameClock(){
+  if(!gameStarted){
+    gameStarted=true;
+    gameStartTime=new Date();
+    document.getElementById('startTimestamp').textContent="Game started: "+gameStartTime.toLocaleTimeString();
+    clockInterval=setInterval(()=>{
+      const now=new Date();
+      const elapsed=Math.floor((now-gameStartTime)/1000);
+      const minutes=Math.floor(elapsed/60);
+      const seconds=elapsed%60;
+      document.getElementById('gameClock').textContent = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+    },1000);
   }
 }
 
-function updateDisplay() {
-  document.getElementById('inningNumber').textContent = inningNumber;
-  document.getElementById('inningHalf').textContent = inningHalf;
-  document.getElementById('inningNumberControl').textContent = inningNumber;
-  document.getElementById('inningHalfControl').textContent = inningHalf;
+// Choose team from modal
+function chooseTeam(selected){
+  team = selected;
+  document.getElementById('teamSelectModal').style.display='none';
+  document.getElementById('awayUs').style.display='none';
+  document.getElementById('homeUs').style.display='none';
+  if(team==='away') document.getElementById('awayUs').style.display='inline';
+  if(team==='home') document.getElementById('homeUs').style.display='inline';
+  updateDisplay();
+}
 
+// Update line score table
+function updateLineScoreTable(){
+  const header=document.getElementById('inningHeader');
+  const tbody=document.querySelector('table.line-score tbody');
+  const maxInning=Math.max(inningNumber, runsPerInningAway.length, runsPerInningHome.length);
+  header.innerHTML='<th>Team</th>';
+  for(let i=1;i<=maxInning;i++) header.innerHTML+=`<th>${i}</th>`;
+  header.innerHTML+='<th>Total</th>';
+  tbody.rows[0].innerHTML=`<td class="team" id="awayCell">Away <span class="team-us" id="awayUs" style="display:${team==='away'?'inline':'none'};">(Us)</span></td>`;
+  tbody.rows[1].innerHTML=`<td class="team" id="homeCell">Home <span class="team-us" id="homeUs" style="display:${team==='home'?'inline':'none'};">(Us)</span></td>`;
+  let totalAway=0,totalHome=0;
+  for(let i=0;i<maxInning;i++){
+    const awayRun=runsPerInningAway[i]||0, homeRun=runsPerInningHome[i]||0;
+    totalAway+=awayRun; totalHome+=homeRun;
+    tbody.rows[0].innerHTML+=`<td>${awayRun}</td>`; 
+    tbody.rows[1].innerHTML+=`<td>${homeRun}</td>`;
+  }
+  tbody.rows[0].innerHTML+=`<td>${totalAway}</td>`; 
+  tbody.rows[1].innerHTML+=`<td>${totalHome}</td>`;
+}
+
+// Update circles
+function updateCircles(){
+  const drawCircles=(containerId,max,count)=>{
+    const container=document.getElementById(containerId);
+    container.innerHTML='';
+    for(let i=0;i<max;i++){
+      const div=document.createElement('div');
+      div.className='circle'+(i<count?' filled':'');
+      container.appendChild(div);
+    }
+  }
+  drawCircles('ballsCircles',4,balls);
+  drawCircles('strikesCircles',3,strikes);
+  drawCircles('outsCircles',3,outs);
+}
+
+// Update display (numbers inside buttons)
+function updateDisplay(){
   document.getElementById('ballsCount').textContent = balls;
   document.getElementById('strikesCount').textContent = strikes;
   document.getElementById('outsCount').textContent = outs;
-  document.getElementById('awayScore').textContent = runsAway;
-  document.getElementById('homeScore').textContent = runsHome;
-  document.getElementById('awayScoreControl').textContent = runsAway;
-  document.getElementById('homeScoreControl').textContent = runsHome;
-
-  document.getElementById('ballsMini').textContent = balls;
-  document.getElementById('strikesMini').textContent = strikes;
-  document.getElementById('outsMini').textContent = outs;
-
-  document.getElementById('awayUs').style.display = (team === 'away') ? 'block' : 'none';
-  document.getElementById('homeUs').style.display = (team === 'home') ? 'block' : 'none';
-
-  document.querySelector(`input[name="team"][value="${team}"]`).checked = true;
-
-  saveState();
+  document.getElementById('inningNumberDisplay').textContent=`${inningHalf} ${inningNumber}`;
+  document.getElementById('awayBtn').querySelector('.value').textContent = runsPerInningAway.reduce((a,b)=>a+b,0);
+  document.getElementById('homeBtn').querySelector('.value').textContent = runsPerInningHome.reduce((a,b)=>a+b,0);
+  updateLineScoreTable();
+  updateCircles();
 }
 
-function addBall() { balls++; if (balls >= 4) resetCount(); updateDisplay(); }
-function subtractBall() { if(balls>0) balls--; updateDisplay(); }
+// Balls, Strikes, Outs
+function addBall(){ balls++; if(balls>=4){ balls=0; strikes=0; } startGameClock(); haptic(); updateDisplay(); }
+function addStrike(){ strikes++; if(strikes>=3){ strikes=0; balls=0; addOut(); } startGameClock(); haptic(); updateDisplay(); }
+function addOut(){ outs++; haptic(); if(outs>=3){ outs=0; incrementInningHalf(); } updateDisplay(); }
+function decrementBall(){ if(balls>0){ balls--; haptic(); updateDisplay(); } }
+function decrementStrike(){ if(strikes>0){ strikes--; haptic(); updateDisplay(); } }
+function decrementOut(){ if(outs>0){ outs--; haptic(); updateDisplay(); } }
 
-function addStrike() { strikes++; if (strikes >= 3) resetCount(); updateDisplay(); }
-function subtractStrike() { if(strikes>0) strikes--; updateDisplay(); }
+// Runs per team
+function addRun(teamName){
+  const index=inningNumber-1;
+  if((inningHalf==='Top' && teamName==='home') || (inningHalf==='Bottom' && teamName==='away')) return;
+  if(teamName==='away'){ if(!runsPerInningAway[index]) runsPerInningAway[index]=0; runsPerInningAway[index]++; }
+  if(teamName==='home'){ if(!runsPerInningHome[index]) runsPerInningHome[index]=0; runsPerInningHome[index]++; }
+  haptic(); updateDisplay();
+}
+function decrementRun(teamName){
+  const index=inningNumber-1;
+  if((teamName==='away' && inningHalf==='Bottom') || (teamName==='home' && inningHalf==='Top')) return;
+  if(teamName==='away' && runsPerInningAway[index]>0) runsPerInningAway[index]--;
+  if(teamName==='home' && runsPerInningHome[index]>0) runsPerInningHome[index]--;
+  haptic(); updateDisplay();
+}
 
-function addOut() { outs++; if (outs >= 3) { outs = 0; incrementInningHalf(); } resetCount(); updateDisplay(); }
-function subtractOut() { if(outs>0) outs--; updateDisplay(); }
+// Inning automatically changes
+function incrementInningHalf(){ inningHalf=(inningHalf==='Top')?'Bottom':'Top'; if(inningHalf==='Top') inningNumber++; }
 
-function addRun(teamName) { if(teamName==='away') runsAway++; if(teamName==='home') runsHome++; updateDisplay(); }
-function subtractRun(teamName) { if(teamName==='away' && runsAway>0) runsAway--; if(teamName==='home' && runsHome>0) runsHome--; updateDisplay(); }
-
-function incrementInningHalf() {
-  inningHalf = (inningHalf === 'Top') ? 'Bottom' : 'Top';
-  if (inningHalf === 'Top') inningNumber++;
+// Reset game
+function resetGame(){
+  balls=strikes=outs=0; inningNumber=1; inningHalf='Top';
+  runsPerInningAway=[0]; runsPerInningHome=[0];
+  gameStarted=false; clearInterval(clockInterval); clockInterval=null; document.getElementById('gameClock').textContent="00:00"; document.getElementById('startTimestamp').textContent='';
+  updateSystemDate();
   updateDisplay();
+  document.getElementById('teamSelectModal').style.display='flex';
 }
 
-function incrementInning() {
-  if (inningHalf === 'Top') { inningHalf = 'Bottom'; }
-  else { inningHalf = 'Top'; inningNumber++; }
+// Button long press helpers
+function addLongPress(btn, addFunc, decFunc){
+  let timer=null;
+  btn.addEventListener('mousedown', e=>{ e.preventDefault(); timer=setTimeout(()=>{ decFunc(); },600); });
+  btn.addEventListener('mouseup', e=>{ clearTimeout(timer); addFunc(); });
+  btn.addEventListener('touchstart', e=>{ timer=setTimeout(()=>{ decFunc(); },600); });
+  btn.addEventListener('touchend', e=>{ clearTimeout(timer); addFunc(); });
+}
+
+// Attach buttons
+document.addEventListener('DOMContentLoaded',()=>{
+  addLongPress(document.getElementById('ballsBtn'), addBall, decrementBall);
+  addLongPress(document.getElementById('strikesBtn'), addStrike, decrementStrike);
+  addLongPress(document.getElementById('outsBtn'), addOut, decrementOut);
+  addLongPress(document.getElementById('awayBtn'), ()=>addRun('away'), ()=>decrementRun('away'));
+  addLongPress(document.getElementById('homeBtn'), ()=>addRun('home'), ()=>decrementRun('home'));
   updateDisplay();
-}
-
-function decrementInning() {
-  if (inningHalf === 'Bottom') { inningHalf = 'Top'; }
-  else { if (inningNumber > 1) { inningHalf = 'Bottom'; inningNumber--; } }
-  updateDisplay();
-}
-
-function resetCount() { balls = 0; strikes = 0; }
-
-function resetGame() {
-  balls = strikes = outs = runsAway = runsHome = 0;
-  inningNumber = 1;
-  inningHalf = 'Top';
-  team = 'away';
-  updateDisplay();
-}
-
-function setTeam(selected) {
-  team = selected;
-  updateDisplay();
-}
-
-// Load saved state on startup
-loadState();
-updateDisplay();
+});
 </script>
-
 </body>
 </html>
