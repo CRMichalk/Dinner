@@ -5,58 +5,69 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Baseball Scoreboard</title>
 <style>
-body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; margin:0; padding:5px; display:flex; flex-direction:column; align-items:center; height:100vh; background:#f8f8f8; }
-h1 { margin:5px 0; font-size:1.4em; text-align:center; }
-.mini-stats { display:flex; justify-content:space-around; width:100%; max-width:420px; margin-bottom:5px; }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; margin:0; padding:10px; background:#f0f4f8; display:flex; flex-direction:column; align-items:center; }
+
+.scoreboard { background:#e0f0ff; border-radius:16px; padding:10px; width:100%; max-width:440px; box-shadow:0 4px 10px rgba(0,0,0,0.1); margin-bottom:10px; display:flex; flex-direction:column; align-items:center; }
+
+h1 { margin:0 0 5px 0; font-size:1.5em; color:#333; }
+
+.mini-stats { display:flex; justify-content:space-around; width:100%; margin-bottom:10px; }
 .circles { display:flex; gap:4px; }
-.circles .circle { width:12px; height:12px; border-radius:50%; border:1px solid #000; background:#ddd; }
+.circles .circle { width:14px; height:14px; border-radius:50%; border:1px solid #555; background:#ddd; }
 .circles .circle.filled { background:#000; }
-table.line-score { width:100%; max-width:420px; border-collapse:collapse; margin-bottom:5px; text-align:center; font-size:0.9em; }
-table.line-score th, table.line-score td { border:1px solid #444; padding:4px 2px; }
-table.line-score th { background:#222; color:#fff; }
-table.line-score td.team { font-weight:bold; background:#333; color:#fff; min-width:30px; position:relative; }
-.team-us { font-size:1em; color:yellow; margin-left:5px; }
-.grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; width:100%; max-width:420px; margin-bottom:5px; }
-.button { background:#444; color:#fff; border-radius:8px; text-align:center; cursor:pointer; user-select:none; display:flex; flex-direction:column; justify-content:center; align-items:center; height:90px; font-size:1.2em; transition: background 0.15s; }
-.button span.label { font-size:1em; color:#ccc; margin-bottom:5px; }
+
+.clock-container { display:flex; justify-content:space-between; width:100%; font-size:0.95em; margin-bottom:10px; color:#333; }
+
+table.line-score { width:100%; border-collapse:separate; border-spacing:0; border-radius:12px; overflow:hidden; text-align:center; font-size:0.95em; margin-bottom:10px; background:#fff; box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+table.line-score th, table.line-score td { border-bottom:1px solid #ccc; padding:6px 4px; }
+table.line-score th { background:#4a90e2; color:#fff; font-weight:normal; }
+table.line-score td.team { font-weight:bold; background:#f0f4f8; position:relative; }
+.team-us { font-size:0.85em; color:gold; margin-left:5px; }
+
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%; max-width:440px; }
+.button { background:#4a90e2; color:#fff; border-radius:12px; text-align:center; cursor:pointer; user-select:none; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100px; font-size:1.2em; transition: background 0.15s; box-shadow:0 2px 4px rgba(0,0,0,0.2); }
+.button span.label { font-size:1em; color:#fff; margin-bottom:5px; }
 .button span.value { font-size:2em; }
-.button.pressed { background:#666; }
+.button.pressed { background:#357ab7; }
 .button.disabled { background:#777; cursor:not-allowed; }
-button.reset { margin-top:5px; padding:10px 20px; border:none; border-radius:8px; background:#222; color:#fff; font-size:1.2em; cursor:pointer; width:90%; max-width:420px; }
+button.reset { margin-top:10px; padding:12px 20px; border:none; border-radius:12px; background:#333; color:#fff; font-size:1.2em; cursor:pointer; width:90%; max-width:440px; }
 button.reset:active { background:#555; }
-.clock-container { display:flex; justify-content:space-between; width:100%; max-width:420px; font-size:1em; margin-bottom:5px; }
+
 #teamSelectModal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:flex; justify-content:center; align-items:center; z-index:100; }
-#teamSelectModal div { background:#fff; padding:20px; border-radius:8px; text-align:center; }
-#teamSelectModal button { margin:5px; padding:10px 20px; font-size:1em; cursor:pointer; }
+#teamSelectModal div { background:#fff; padding:20px; border-radius:12px; text-align:center; }
+#teamSelectModal button { margin:5px; padding:10px 20px; font-size:1em; cursor:pointer; background:#4a90e2; color:#fff; border:none; border-radius:8px; }
+#teamSelectModal button:hover { background:#357ab7; }
 </style>
 </head>
 <body>
 
-<h1 id="systemDate"></h1>
+<div class="scoreboard">
+  <h1 id="systemDate"></h1>
 
-<!-- Balls/Strikes/Outs visual circles above scoreboard -->
-<div class="mini-stats">
-  <div>B: <div class="circles" id="ballsCircles"></div></div>
-  <div>S: <div class="circles" id="strikesCircles"></div></div>
-  <div>O: <div class="circles" id="outsCircles"></div></div>
+  <!-- Balls/Strikes/Outs visual circles -->
+  <div class="mini-stats">
+    <div>B: <div class="circles" id="ballsCircles"></div></div>
+    <div>S: <div class="circles" id="strikesCircles"></div></div>
+    <div>O: <div class="circles" id="outsCircles"></div></div>
+  </div>
+
+  <!-- Clock and start timestamp -->
+  <div class="clock-container">
+    <div>Clock: <span id="gameClock">00:00</span></div>
+    <div id="startTimestamp"></div>
+  </div>
+
+  <!-- Line score table -->
+  <table class="line-score">
+    <thead>
+      <tr id="inningHeader"><th>Team</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="team" id="awayCell">Away <span class="team-us" id="awayUs" style="display:none;">(Us)</span></td></tr>
+      <tr><td class="team" id="homeCell">Home <span class="team-us" id="homeUs" style="display:none;">(Us)</span></td></tr>
+    </tbody>
+  </table>
 </div>
-
-<!-- Clock and start timestamp same line -->
-<div class="clock-container">
-  <div>Clock: <span id="gameClock">00:00</span></div>
-  <div id="startTimestamp"></div>
-</div>
-
-<!-- Line score table -->
-<table class="line-score">
-  <thead>
-    <tr id="inningHeader"><th>Team</th></tr>
-  </thead>
-  <tbody>
-    <tr><td class="team" id="awayCell">Away <span class="team-us" id="awayUs" style="display:none;">(Us)</span></td></tr>
-    <tr><td class="team" id="homeCell">Home <span class="team-us" id="homeUs" style="display:none;">(Us)</span></td></tr>
-  </tbody>
-</table>
 
 <!-- Buttons grid -->
 <div class="grid">
@@ -85,7 +96,7 @@ let team=null;
 let runsPerInningAway=[0], runsPerInningHome=[0];
 let gameStarted=false, gameStartTime=null, clockInterval=null;
 
-// Display system date with day of week
+// Display system date
 function updateSystemDate(){
   const now=new Date();
   const options={weekday:'long', year:'numeric', month:'long', day:'numeric'};
@@ -112,7 +123,7 @@ function startGameClock(){
   }
 }
 
-// Choose team from modal
+// Choose team
 function chooseTeam(selected){
   team = selected;
   document.getElementById('teamSelectModal').style.display='none';
@@ -123,7 +134,7 @@ function chooseTeam(selected){
   updateDisplay();
 }
 
-// Update line score table
+// Update line score
 function updateLineScoreTable(){
   const header=document.getElementById('inningHeader');
   const tbody=document.querySelector('table.line-score tbody');
@@ -144,7 +155,7 @@ function updateLineScoreTable(){
   tbody.rows[1].innerHTML+=`<td>${totalHome}</td>`;
 }
 
-// Update circles
+// Circles
 function updateCircles(){
   const drawCircles=(containerId,max,count)=>{
     const container=document.getElementById(containerId);
@@ -160,7 +171,7 @@ function updateCircles(){
   drawCircles('outsCircles',3,outs);
 }
 
-// Update display (numbers inside buttons)
+// Display numbers
 function updateDisplay(){
   document.getElementById('ballsCount').textContent = balls;
   document.getElementById('strikesCount').textContent = strikes;
@@ -209,13 +220,30 @@ function resetGame(){
   document.getElementById('teamSelectModal').style.display='flex';
 }
 
-// Button long press helpers
+// Long press helper for mobile (increment on tap, decrement on long press)
 function addLongPress(btn, addFunc, decFunc){
-  let timer=null;
-  btn.addEventListener('mousedown', e=>{ e.preventDefault(); timer=setTimeout(()=>{ decFunc(); },600); });
-  btn.addEventListener('mouseup', e=>{ clearTimeout(timer); addFunc(); });
-  btn.addEventListener('touchstart', e=>{ timer=setTimeout(()=>{ decFunc(); },600); });
-  btn.addEventListener('touchend', e=>{ clearTimeout(timer); addFunc(); });
+  let timer=null, touchActive=false;
+
+  btn.addEventListener('mousedown', e=>{
+    e.preventDefault();
+    if(touchActive) return;
+    timer=setTimeout(()=>{ decFunc(); },600);
+  });
+  btn.addEventListener('mouseup', e=>{
+    if(touchActive) return;
+    clearTimeout(timer);
+    addFunc();
+  });
+  btn.addEventListener('touchstart', e=>{
+    e.preventDefault();
+    touchActive=true;
+    timer=setTimeout(()=>{ decFunc(); },600);
+  });
+  btn.addEventListener('touchend', e=>{
+    clearTimeout(timer);
+    addFunc();
+    setTimeout(()=>{ touchActive=false; },50);
+  });
 }
 
 // Attach buttons
@@ -228,5 +256,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   updateDisplay();
 });
 </script>
+
 </body>
 </html>
