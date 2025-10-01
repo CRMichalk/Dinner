@@ -5,37 +5,38 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Baseball Scoreboard</title>
 <style>
-body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; margin:0; padding:10px; background:#f0f4f8; display:flex; flex-direction:column; align-items:center; }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; margin:0; padding:5px; background:#f0f4f8; display:flex; flex-direction:column; align-items:center; }
 
-.scoreboard { background:#e0f0ff; border-radius:16px; padding:10px; width:100%; max-width:440px; box-shadow:0 4px 10px rgba(0,0,0,0.1); margin-bottom:10px; display:flex; flex-direction:column; align-items:center; }
+.scoreboard { background:#e0f0ff; border-radius:16px; padding:8px; width:100%; max-width:440px; box-shadow:0 4px 10px rgba(0,0,0,0.1); margin-bottom:8px; display:flex; flex-direction:column; align-items:center; }
 
-h1 { margin:0 0 5px 0; font-size:1.5em; color:#333; }
+h1 { margin:0 0 4px 0; font-size:1.2em; color:#333; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-.mini-stats { display:flex; justify-content:space-around; width:100%; margin-bottom:10px; }
-.circles { display:flex; gap:4px; }
-.circles .circle { width:14px; height:14px; border-radius:50%; border:1px solid #555; background:#ddd; }
+.mini-stats { display:flex; justify-content:space-around; width:100%; margin-bottom:6px; }
+.circles { display:flex; gap:3px; }
+.circles .circle { width:12px; height:12px; border-radius:50%; border:1px solid #555; background:#ddd; }
 .circles .circle.filled { background:#000; }
 
-.clock-container { display:flex; justify-content:space-between; width:100%; font-size:0.95em; margin-bottom:10px; color:#333; }
+.clock-container { display:flex; justify-content:space-between; width:100%; font-size:0.85em; margin-bottom:6px; color:#333; }
 
-table.line-score { width:100%; border-collapse:separate; border-spacing:0; border-radius:12px; overflow:hidden; text-align:center; font-size:0.95em; margin-bottom:10px; background:#fff; box-shadow:0 2px 5px rgba(0,0,0,0.1);}
-table.line-score th, table.line-score td { border-bottom:1px solid #ccc; padding:6px 4px; }
+table.line-score { width:100%; border-collapse:separate; border-spacing:0; border-radius:12px; overflow:hidden; text-align:center; font-size:0.85em; margin-bottom:6px; background:#fff; box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+table.line-score th, table.line-score td { border-bottom:1px solid #ccc; padding:4px 2px; }
 table.line-score th { background:#4a90e2; color:#fff; font-weight:normal; }
 table.line-score td.team { font-weight:bold; background:#f0f4f8; position:relative; }
-.team-us { font-size:0.85em; color:gold; margin-left:5px; }
+.team-us { font-size:0.75em; color:gold; margin-left:3px; }
 
-.grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%; max-width:440px; }
-.button { background:#4a90e2; color:#fff; border-radius:12px; text-align:center; cursor:pointer; user-select:none; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100px; font-size:1.2em; transition: background 0.15s; box-shadow:0 2px 4px rgba(0,0,0,0.2); }
-.button span.label { font-size:1em; color:#fff; margin-bottom:5px; }
-.button span.value { font-size:2em; }
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; width:100%; max-width:440px; }
+.button { background:#4a90e2; color:#fff; border-radius:12px; text-align:center; cursor:pointer; user-select:none; display:flex; flex-direction:column; justify-content:center; align-items:center; height:75px; font-size:1.1em; transition: background 0.15s; box-shadow:0 2px 4px rgba(0,0,0,0.2); }
+.button span.label { font-size:0.9em; color:#fff; margin-bottom:4px; }
+.button span.value { font-size:1.5em; }
 .button.pressed { background:#357ab7; }
 .button.disabled { background:#777; cursor:not-allowed; }
-button.reset { margin-top:10px; padding:12px 20px; border:none; border-radius:12px; background:#333; color:#fff; font-size:1.2em; cursor:pointer; width:90%; max-width:440px; }
+
+button.reset { margin-top:8px; padding:10px 16px; border:none; border-radius:12px; background:#333; color:#fff; font-size:1em; cursor:pointer; width:90%; max-width:440px; }
 button.reset:active { background:#555; }
 
 #teamSelectModal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:flex; justify-content:center; align-items:center; z-index:100; }
-#teamSelectModal div { background:#fff; padding:20px; border-radius:12px; text-align:center; }
-#teamSelectModal button { margin:5px; padding:10px 20px; font-size:1em; cursor:pointer; background:#4a90e2; color:#fff; border:none; border-radius:8px; }
+#teamSelectModal div { background:#fff; padding:16px; border-radius:12px; text-align:center; }
+#teamSelectModal button { margin:5px; padding:8px 16px; font-size:0.95em; cursor:pointer; background:#4a90e2; color:#fff; border:none; border-radius:8px; }
 #teamSelectModal button:hover { background:#357ab7; }
 </style>
 </head>
@@ -44,20 +45,17 @@ button.reset:active { background:#555; }
 <div class="scoreboard">
   <h1 id="systemDate"></h1>
 
-  <!-- Balls/Strikes/Outs visual circles -->
   <div class="mini-stats">
     <div>B: <div class="circles" id="ballsCircles"></div></div>
     <div>S: <div class="circles" id="strikesCircles"></div></div>
     <div>O: <div class="circles" id="outsCircles"></div></div>
   </div>
 
-  <!-- Clock and start timestamp -->
   <div class="clock-container">
     <div>Clock: <span id="gameClock">00:00</span></div>
     <div id="startTimestamp"></div>
   </div>
 
-  <!-- Line score table -->
   <table class="line-score">
     <thead>
       <tr id="inningHeader"><th>Team</th></tr>
@@ -69,7 +67,6 @@ button.reset:active { background:#555; }
   </table>
 </div>
 
-<!-- Buttons grid -->
 <div class="grid">
   <div class="button" id="ballsBtn"><span class="label">Balls</span><span class="value" id="ballsCount">0</span></div>
   <div class="button" id="awayBtn"><span class="label">Away</span><span class="value">0</span></div>
@@ -81,7 +78,6 @@ button.reset:active { background:#555; }
 
 <button class="reset" onclick="resetGame()">Reset Game</button>
 
-<!-- Team selection modal -->
 <div id="teamSelectModal">
   <div>
     <p>Select your team:</p>
@@ -96,7 +92,6 @@ let team=null;
 let runsPerInningAway=[0], runsPerInningHome=[0];
 let gameStarted=false, gameStartTime=null, clockInterval=null;
 
-// Display system date
 function updateSystemDate(){
   const now=new Date();
   const options={weekday:'long', year:'numeric', month:'long', day:'numeric'};
@@ -104,10 +99,8 @@ function updateSystemDate(){
 }
 updateSystemDate();
 
-// Haptic feedback
 function haptic(){ if(navigator.vibrate) navigator.vibrate(50); }
 
-// Start game clock
 function startGameClock(){
   if(!gameStarted){
     gameStarted=true;
@@ -123,18 +116,14 @@ function startGameClock(){
   }
 }
 
-// Choose team
 function chooseTeam(selected){
   team = selected;
   document.getElementById('teamSelectModal').style.display='none';
-  document.getElementById('awayUs').style.display='none';
-  document.getElementById('homeUs').style.display='none';
-  if(team==='away') document.getElementById('awayUs').style.display='inline';
-  if(team==='home') document.getElementById('homeUs').style.display='inline';
+  document.getElementById('awayUs').style.display=(team==='away')?'inline':'none';
+  document.getElementById('homeUs').style.display=(team==='home')?'inline':'none';
   updateDisplay();
 }
 
-// Update line score
 function updateLineScoreTable(){
   const header=document.getElementById('inningHeader');
   const tbody=document.querySelector('table.line-score tbody');
@@ -155,7 +144,6 @@ function updateLineScoreTable(){
   tbody.rows[1].innerHTML+=`<td>${totalHome}</td>`;
 }
 
-// Circles
 function updateCircles(){
   const drawCircles=(containerId,max,count)=>{
     const container=document.getElementById(containerId);
@@ -171,46 +159,42 @@ function updateCircles(){
   drawCircles('outsCircles',3,outs);
 }
 
-// Display numbers
 function updateDisplay(){
   document.getElementById('ballsCount').textContent = balls;
   document.getElementById('strikesCount').textContent = strikes;
   document.getElementById('outsCount').textContent = outs;
   document.getElementById('inningNumberDisplay').textContent=`${inningHalf} ${inningNumber}`;
-  document.getElementById('awayBtn').querySelector('.value').textContent = runsPerInningAway.reduce((a,b)=>a+b,0);
-  document.getElementById('homeBtn').querySelector('.value').textContent = runsPerInningHome.reduce((a,b)=>a+b,0);
-  updateLineScoreTable();
   updateCircles();
+  updateLineScoreTable();
 }
 
-// Balls, Strikes, Outs
-function addBall(){ balls++; if(balls>=4){ balls=0; strikes=0; } startGameClock(); haptic(); updateDisplay(); }
-function addStrike(){ strikes++; if(strikes>=3){ strikes=0; balls=0; addOut(); } startGameClock(); haptic(); updateDisplay(); }
-function addOut(){ outs++; haptic(); if(outs>=3){ outs=0; incrementInningHalf(); } updateDisplay(); }
+function addBall(){ startGameClock(); balls++; if(balls>=4){ balls=0; strikes=0; addOut(); } updateDisplay(); }
 function decrementBall(){ if(balls>0){ balls--; haptic(); updateDisplay(); } }
+
+function addStrike(){ startGameClock(); strikes++; if(strikes>=3){ strikes=0; balls=0; addOut(); } updateDisplay(); }
 function decrementStrike(){ if(strikes>0){ strikes--; haptic(); updateDisplay(); } }
+
+function addOut(){ outs++; if(outs>=3){ outs=0; incrementInningHalf(); } balls=strikes=0; updateDisplay(); haptic(); }
 function decrementOut(){ if(outs>0){ outs--; haptic(); updateDisplay(); } }
 
-// Runs per team
 function addRun(teamName){
   const index=inningNumber-1;
-  if((inningHalf==='Top' && teamName==='home') || (inningHalf==='Bottom' && teamName==='away')) return;
+  if((inningHalf==='Top' && teamName==='home')||(inningHalf==='Bottom' && teamName==='away')) return;
   if(teamName==='away'){ if(!runsPerInningAway[index]) runsPerInningAway[index]=0; runsPerInningAway[index]++; }
   if(teamName==='home'){ if(!runsPerInningHome[index]) runsPerInningHome[index]=0; runsPerInningHome[index]++; }
   haptic(); updateDisplay();
 }
+
 function decrementRun(teamName){
   const index=inningNumber-1;
-  if((teamName==='away' && inningHalf==='Bottom') || (teamName==='home' && inningHalf==='Top')) return;
+  if((teamName==='away' && inningHalf==='Bottom')||(teamName==='home' && inningHalf==='Top')) return;
   if(teamName==='away' && runsPerInningAway[index]>0) runsPerInningAway[index]--;
   if(teamName==='home' && runsPerInningHome[index]>0) runsPerInningHome[index]--;
   haptic(); updateDisplay();
 }
 
-// Inning automatically changes
 function incrementInningHalf(){ inningHalf=(inningHalf==='Top')?'Bottom':'Top'; if(inningHalf==='Top') inningNumber++; }
 
-// Reset game
 function resetGame(){
   balls=strikes=outs=0; inningNumber=1; inningHalf='Top';
   runsPerInningAway=[0]; runsPerInningHome=[0];
@@ -256,6 +240,5 @@ document.addEventListener('DOMContentLoaded',()=>{
   updateDisplay();
 });
 </script>
-
 </body>
 </html>
