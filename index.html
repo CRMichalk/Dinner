@@ -1,223 +1,402 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>Baseball Scoreboard</title>
 <style>
-body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; margin:0; padding:5px; background:#f0f4f8; display:flex; flex-direction:column; align-items:center; }
-
-.scoreboard { background:#e0f0ff; border-radius:16px; padding:8px; width:100%; max-width:440px; box-shadow:0 4px 10px rgba(0,0,0,0.1); margin-bottom:8px; display:flex; flex-direction:column; align-items:center; }
-
-h1 { margin:0 0 4px 0; font-size:1.1em; color:#333; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-
-.mini-stats { display:flex; justify-content:space-around; width:100%; margin-bottom:6px; }
-.circles { display:flex; gap:3px; }
-.circles .circle { width:12px; height:12px; border-radius:50%; border:1px solid #555; background:#ddd; }
-.circles .circle.filled { background:#000; }
-
-.clock-container { display:flex; justify-content:space-between; width:100%; font-size:0.85em; margin-bottom:6px; color:#333; }
-
-table.line-score { width:100%; border-collapse:separate; border-spacing:0; border-radius:12px; overflow:hidden; text-align:center; font-size:0.85em; margin-bottom:6px; background:#fff; box-shadow:0 2px 5px rgba(0,0,0,0.1);}
-table.line-score th, table.line-score td { border-bottom:1px solid #ccc; padding:4px 2px; }
-table.line-score th { background:#4a90e2; color:#fff; font-weight:normal; }
-table.line-score td.team { font-weight:bold; background:#f0f4f8; position:relative; }
-.team-us { font-size:0.75em; color:gold; margin-left:3px; }
-
-.grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; width:100%; max-width:440px; }
-.button { background:#4a90e2; color:#fff; border-radius:12px; text-align:center; cursor:pointer; user-select:none; display:flex; flex-direction:column; justify-content:center; align-items:center; height:70px; font-size:1.1em; transition: background 0.15s; box-shadow:0 2px 4px rgba(0,0,0,0.2); }
-.button span.label { font-size:0.9em; color:#fff; margin-bottom:4px; }
-.button span.value { font-size:1.5em; }
-.button.pressed { background:#357ab7; }
-.button.disabled { background:#777; cursor:not-allowed; }
-
-button.reset { margin-top:8px; padding:10px 16px; border:none; border-radius:12px; background:#333; color:#fff; font-size:1em; cursor:pointer; width:90%; max-width:440px; }
-button.reset:active { background:#555; }
-
-#teamSelectModal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:flex; justify-content:center; align-items:center; z-index:100; }
-#teamSelectModal div { background:#fff; padding:16px; border-radius:12px; text-align:center; }
-#teamSelectModal button { margin:5px; padding:8px 16px; font-size:0.95em; cursor:pointer; background:#4a90e2; color:#fff; border:none; border-radius:8px; }
-#teamSelectModal button:hover { background:#357ab7; }
-
+:root{
+  --bg:#f4f7fa;
+  --card:#eaf6ff;
+  --accent:#3b82c6;
+  --btn:#4a90e2;
+  --muted:#6b7280;
+}
+html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:440px;width:100%;margin:6px auto;padding:0 8px;box-sizing:border-box}
+.card{background:var(--card);border-radius:14px;padding:8px;box-shadow:0 6px 16px rgba(0,0,0,0.06);display:flex;flex-direction:column;gap:6px}
+.date{font-size:1.02em;color:#102a43;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:2px 4px}
+.mini{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:0 4px}
+.cset{display:flex;align-items:center;gap:8px}
+.labelSmall{font-size:0.82em;color:var(--muted)}
+.circles{display:flex;gap:6px;align-items:center}
+.circle{width:12px;height:12px;border-radius:50%;border:1px solid #111;background:#ddd}
+.circle.filled{background:#000}
+.clockRow{display:flex;justify-content:space-between;font-size:0.86em;color:#123;padding:0 4px}
+.tableWrap{overflow:hidden;border-radius:10px}
+table.score{width:100%;border-collapse:collapse;background:#fff;font-size:0.86em}
+table.score thead th{background:var(--accent);color:#fff;padding:6px 4px;font-weight:600}
+table.score td, table.score th{border-bottom:1px solid #e6eef8;padding:6px 4px;text-align:center}
+td.team{background:#f7fbff;text-align:left;padding-left:10px}
+.team-us{color:red;margin-left:6px;font-size:0.82em}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.btn{background:var(--btn);color:#fff;border-radius:10px;height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none;padding:6px;box-shadow:0 3px 8px rgba(0,0,0,0.12)}
+.btn .label{font-size:0.92em}
+.btn .value{font-size:1.4em;font-weight:700}
+.btn:active{transform:translateY(1px)}
+.reset{margin-top:10px;width:100%;padding:8px;border-radius:10px;border:none;background:#222;color:#fff;font-size:0.95em}
+.modal-back{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);z-index:999}
+.modal{background:#fff;padding:14px;border-radius:12px;min-width:260px;text-align:center;box-shadow:0 8px 20px rgba(0,0,0,0.12)}
+.modal h3{margin:6px 0 10px 0;font-size:1em}
+.modal button{margin:6px;padding:8px 14px;border-radius:8px;border:none;background:var(--btn);color:#fff;font-size:0.95em}
+@media (max-height:650px){ .btn{height:58px} .btn .value{font-size:1.2em} .date{font-size:0.98em} }
 </style>
 </head>
 <body>
+  <div class="wrap">
+    <div class="card" role="region" aria-label="Scoreboard">
+      <div class="date" id="dateDisplay"></div>
 
-<div class="scoreboard">
-  <h1 id="systemDate"></h1>
+      <div class="mini">
+        <div class="cset">
+          <div class="labelSmall">B</div>
+          <div class="circles" id="ballsCircles" aria-hidden="true"></div>
+          <div class="labelSmall">S</div>
+          <div class="circles" id="strikesCircles" aria-hidden="true"></div>
+          <div class="labelSmall">O</div>
+          <div class="circles" id="outsCircles" aria-hidden="true"></div>
+        </div>
+      </div>
 
-  <div class="mini-stats">
-    <div>B: <div class="circles" id="ballsCircles"></div></div>
-    <div>S: <div class="circles" id="strikesCircles"></div></div>
-    <div>O: <div class="circles" id="outsCircles"></div></div>
+      <div class="clockRow">
+        <div id="gameClock">00:00</div>
+        <div id="startTime"></div>
+      </div>
+
+      <div class="tableWrap" aria-live="polite">
+        <table class="score" id="scoreTable">
+          <thead><tr id="theadRow"><th></th><th>1</th><th>Total</th></tr></thead>
+          <tbody>
+            <tr id="awayRow"><td class="team" id="awayLabel">Away</td><td id="away1">0</td><td id="awayTotal">0</td></tr>
+            <tr id="homeRow"><td class="team" id="homeLabel">Home</td><td id="home1">0</td><td id="homeTotal">0</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="grid" aria-hidden="false">
+      <div class="btn" id="ballsBtn" role="button" aria-label="Balls"><div class="label">Balls</div><div class="value" id="ballsValue">0</div></div>
+      <div class="btn" id="awayBtn" role="button" aria-label="Away"><div class="label">Away</div><div class="value" id="awayValue">0</div></div>
+      <div class="btn" id="strikesBtn" role="button" aria-label="Strikes"><div class="label">Strikes</div><div class="value" id="strikesValue">0</div></div>
+      <div class="btn" id="homeBtn" role="button" aria-label="Home"><div class="label">Home</div><div class="value" id="homeValue">0</div></div>
+      <div class="btn" id="outsBtn" role="button" aria-label="Outs"><div class="label">Outs</div><div class="value" id="outsValue">0</div></div>
+      <div class="btn" id="inningDisplay" aria-hidden="true"><div class="label">Inning</div><div class="value" id="inningValue">Top 1</div></div>
+    </div>
+
+    <button class="reset" id="resetBtn">Reset Game</button>
   </div>
 
-  <div class="clock-container">
-    <div>Clock: <span id="gameClock">00:00</span></div>
-    <div id="startTimestamp"></div>
+  <!-- Team modal (shows when no team saved) -->
+  <div id="teamModal" class="modal-back" style="display:none">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Choose team">
+      <h3>Which team are you rooting for?</h3>
+      <div style="display:flex;justify-content:center;gap:10px">
+        <button id="chooseAway">Away</button>
+        <button id="chooseHome">Home</button>
+      </div>
+    </div>
   </div>
-
-  <table class="line-score">
-    <thead>
-      <tr id="inningHeader"><th>Team</th></tr>
-    </thead>
-    <tbody>
-      <tr><td class="team" id="awayCell">Away <span class="team-us" id="awayUs" style="display:none;">(Us)</span></td></tr>
-      <tr><td class="team" id="homeCell">Home <span class="team-us" id="homeUs" style="display:none;">(Us)</span></td></tr>
-    </tbody>
-  </table>
-</div>
-
-<div class="grid">
-  <div class="button" id="ballsBtn"><span class="label">Balls</span><span class="value" id="ballsCount">0</span></div>
-  <div class="button" id="awayBtn"><span class="label">Away</span><span class="value">0</span></div>
-  <div class="button" id="strikesBtn"><span class="label">Strikes</span><span class="value" id="strikesCount">0</span></div>
-  <div class="button" id="homeBtn"><span class="label">Home</span><span class="value">0</span></div>
-  <div class="button" id="outsBtn"><span class="label">Outs</span><span class="value" id="outsCount">0</span></div>
-  <div class="button" id="inningBtn"><span class="label">Inning</span><span class="value" id="inningNumberDisplay">Top 1</span></div>
-</div>
-
-<button class="reset" onclick="resetGame()">Reset Game</button>
-
-<div id="teamSelectModal">
-  <div>
-    <p>Select your team:</p>
-    <button onclick="chooseTeam('away')">Away</button>
-    <button onclick="chooseTeam('home')">Home</button>
-  </div>
-</div>
 
 <script>
-let inningNumber=1, inningHalf='Top', balls=0, strikes=0, outs=0;
-let team=null;
-let runsPerInningAway=[0], runsPerInningHome=[0];
-let gameStarted=false, gameStartTime=null, clockInterval=null;
+/* ---------- State ---------- */
+const STORAGE = 'scoreboard_v3';
+let balls=0, strikes=0, outs=0;
+let inning=1, half='Top';
+let runsAway=[0], runsHome=[0];
+let team = null; // 'away' | 'home'
+let startTimestamp = null, clockTimer = null;
 
-function updateSystemDate(){
-  const now=new Date();
-  const options={weekday:'long', year:'numeric', month:'long', day:'numeric'};
-  document.getElementById('systemDate').textContent=now.toLocaleDateString(undefined,options);
-}
-updateSystemDate();
+/* ---------- Helpers ---------- */
+function haptic(){ if(navigator.vibrate) navigator.vibrate(20); }
+function pad(n){ return String(n).padStart(2,'0'); }
 
-function haptic(){ if(navigator.vibrate) navigator.vibrate(50); }
-
-function startGameClock(){
-  if(!gameStarted){
-    gameStarted=true;
-    gameStartTime=new Date();
-    document.getElementById('startTimestamp').textContent="Game started: "+gameStartTime.toLocaleTimeString();
-    clockInterval=setInterval(()=>{
-      const now=new Date();
-      const elapsed=Math.floor((now-gameStartTime)/1000);
-      const minutes=Math.floor(elapsed/60);
-      const seconds=elapsed%60;
-      document.getElementById('gameClock').textContent = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
-    },1000);
-  }
-}
-
-function chooseTeam(selected){
-  team = selected;
-  document.getElementById('teamSelectModal').style.display='none';
-  document.getElementById('awayUs').style.display=(team==='away')?'inline':'none';
-  document.getElementById('homeUs').style.display=(team==='home')?'inline':'none';
-  updateDisplay();
-}
-
-function updateLineScoreTable(){
-  const header=document.getElementById('inningHeader');
-  const tbody=document.querySelector('table.line-score tbody');
-  const maxInning=Math.max(inningNumber, runsPerInningAway.length, runsPerInningHome.length);
-  header.innerHTML='<th>Team</th>';
-  for(let i=1;i<=maxInning;i++) header.innerHTML+=`<th>${i}</th>`;
-  header.innerHTML+='<th>Total</th>';
-  tbody.rows[0].innerHTML=`<td class="team" id="awayCell">Away <span class="team-us" id="awayUs" style="display:${team==='away'?'inline':'none'};">(Us)</span></td>`;
-  tbody.rows[1].innerHTML=`<td class="team" id="homeCell">Home <span class="team-us" id="homeUs" style="display:${team==='home'?'inline':'none'};">(Us)</span></td>`;
-  let totalAway=0,totalHome=0;
-  for(let i=0;i<maxInning;i++){
-    const awayRun=runsPerInningAway[i]||0, homeRun=runsPerInningHome[i]||0;
-    totalAway+=awayRun; totalHome+=homeRun;
-    tbody.rows[0].innerHTML+=`<td>${awayRun}</td>`;
-    tbody.rows[1].innerHTML+=`<td>${homeRun}</td>`;
-  }
-  tbody.rows[0].innerHTML+=`<td>${totalAway}</td>`;
-  tbody.rows[1].innerHTML+=`<td>${totalHome}</td>`;
-}
-
-function updateCircles(){
-  const fillCircles=(num,containerId)=>{
-    const container=document.getElementById(containerId);
-    container.innerHTML='';
-    for(let i=0;i<4;i++){
-      const c=document.createElement('div');
-      c.className='circle'+(i<num?' filled':'');
-      container.appendChild(c);
-    }
+/* ---------- Persistence ---------- */
+function saveState(){
+  const state = {
+    balls, strikes, outs, inning, half, runsAway, runsHome,
+    team,
+    startTimestamp: startTimestamp ? startTimestamp.toISOString() : null
   };
-  fillCircles(balls,'ballsCircles');
-  fillCircles(strikes,'strikesCircles');
-  fillCircles(outs,'outsCircles');
+  localStorage.setItem(STORAGE, JSON.stringify(state));
+}
+function loadState(){
+  const raw = localStorage.getItem(STORAGE);
+  if(!raw) return false;
+  try{
+    const s = JSON.parse(raw);
+    balls = s.balls ?? 0;
+    strikes = s.strikes ?? 0;
+    outs = s.outs ?? 0;
+    inning = s.inning ?? 1;
+    half = s.half ?? 'Top';
+    runsAway = Array.isArray(s.runsAway) ? s.runsAway : [0];
+    runsHome = Array.isArray(s.runsHome) ? s.runsHome : [0];
+    team = s.team ?? null;
+    startTimestamp = s.startTimestamp ? new Date(s.startTimestamp) : null;
+    return true;
+  }catch(e){
+    console.warn('loadState error', e);
+    return false;
+  }
 }
 
-function updateDisplay(){
-  document.getElementById('ballsCount').textContent=balls;
-  document.getElementById('strikesCount').textContent=strikes;
-  document.getElementById('outsCount').textContent=outs;
-  document.getElementById('inningNumberDisplay').textContent=`${inningHalf} ${inningNumber}`;
+/* ---------- UI Rendering ---------- */
+function renderCircles(id, count, max){
+  const c = document.getElementById(id);
+  c.innerHTML = '';
+  for(let i=0;i<max;i++){
+    const d = document.createElement('div');
+    d.className = 'circle' + (i < count ? ' filled' : '');
+    c.appendChild(d);
+  }
+}
+function renderUI(){
+  // date
+  const now = new Date();
+  document.getElementById('dateDisplay').textContent = now.toLocaleDateString(undefined,{weekday:'long', month:'short', day:'numeric', year:'numeric'});
 
-  // Total runs on buttons
-  const totalAway=runsPerInningAway.reduce((a,b)=>a+b,0);
-  const totalHome=runsPerInningHome.reduce((a,b)=>a+b,0);
-  document.querySelector('#awayBtn .value').textContent=totalAway;
-  document.querySelector('#homeBtn .value').textContent=totalHome;
+  // circles: balls 3, strikes 2, outs 2
+  renderCircles('ballsCircles', balls, 3);
+  renderCircles('strikesCircles', strikes, 2);
+  renderCircles('outsCircles', outs, 2);
 
-  updateCircles();
-  updateLineScoreTable();
+  // button values
+  document.getElementById('ballsValue').textContent = balls;
+  document.getElementById('strikesValue').textContent = strikes;
+  document.getElementById('outsValue').textContent = outs;
+
+  const totalAway = runsAway.reduce((a,b)=>a+b,0);
+  const totalHome = runsHome.reduce((a,b)=>a+b,0);
+  document.getElementById('awayValue').textContent = totalAway;
+  document.getElementById('homeValue').textContent = totalHome;
+
+  // inning label
+  document.getElementById('inningValue').textContent = `${half} ${inning}`;
+
+  // scoreboard table
+  const thead = document.getElementById('theadRow');
+  thead.innerHTML = '<th></th>';
+  const numInnings = Math.max(runsAway.length, runsHome.length, inning);
+  for(let i=1;i<=numInnings;i++){
+    const th = document.createElement('th'); th.textContent = i; thead.appendChild(th);
+  }
+  const totalTh = document.createElement('th'); totalTh.textContent = 'R'; thead.appendChild(totalTh);
+
+  // rows
+  const awayRow = document.getElementById('awayRow');
+  const homeRow = document.getElementById('homeRow');
+  awayRow.innerHTML = `<td class="team" id="awayLabel">Away${team==='away' ? ' <span class="team-us">(Us)</span>' : ''}</td>`;
+  homeRow.innerHTML = `<td class="team" id="homeLabel">Home${team==='home' ? ' <span class="team-us">(Us)</span>' : ''}</td>`;
+  for(let i=0;i<numInnings;i++){
+    const a = document.createElement('td'); a.textContent = runsAway[i] ?? 0; awayRow.appendChild(a);
+  }
+  for(let i=0;i<numInnings;i++){
+    const h = document.createElement('td'); h.textContent = runsHome[i] ?? 0; homeRow.appendChild(h);
+  }
+  const totalA = document.createElement('td'); totalA.textContent = totalAway; awayRow.appendChild(totalA);
+  const totalH = document.createElement('td'); totalH.textContent = totalHome; homeRow.appendChild(totalH);
+
+  // start time & clock
+  if(startTimestamp){
+    document.getElementById('startTime').textContent = 'Start: ' + new Date(startTimestamp).toLocaleTimeString();
+    tickClock();
+  } else {
+    document.getElementById('startTime').textContent = '';
+    document.getElementById('gameClock').textContent = '00:00';
+  }
+
+  saveState();
 }
 
-function addBall(){ startGameClock(); balls++; if(balls>=4){ balls=0; strikes=0; addOut(); } updateDisplay(); }
-function decrementBall(){ if(balls>0){ balls--; haptic(); updateDisplay(); } }
-function addStrike(){ startGameClock(); strikes++; if(strikes>=3){ strikes=0; balls=0; addOut(); } updateDisplay(); }
-function decrementStrike(){ if(strikes>0){ strikes--; haptic(); updateDisplay(); } }
-function addOut(){ outs++; if(outs>=3){ outs=0; incrementInningHalf(); } balls=strikes=0; updateDisplay(); haptic(); }
-function decrementOut(){ if(outs>0){ outs--; haptic(); updateDisplay(); } }
-
-function addRun(teamName){
-  const index=inningNumber-1;
-  if((inningHalf==='Top' && teamName==='home')||(inningHalf==='Bottom' && teamName==='away')) return;
-  if(teamName==='away'){ if(!runsPerInningAway[index]) runsPerInningAway[index]=0; runsPerInningAway[index]++; }
-  if(teamName==='home'){ if(!runsPerInningHome[index]) runsPerInningHome[index]=0; runsPerInningHome[index]++; }
-  haptic(); updateDisplay();
+/* ---------- Clock ---------- */
+function startClockIfNeeded(){
+  if(startTimestamp && !clockTimer){
+    tickClock();
+    clockTimer = setInterval(tickClock,1000);
+  }
 }
-function decrementRun(teamName){
-  const index=inningNumber-1;
-  if((teamName==='away' && inningHalf==='Bottom')||(teamName==='home' && inningHalf==='Top')) return;
-  if(teamName==='away' && runsPerInningAway[index]>0) runsPerInningAway[index]--;
-  if(teamName==='home' && runsPerInningHome[index]>0) runsPerInningHome[index]--;
-  haptic(); updateDisplay();
+function startClockNow(){
+  if(!startTimestamp){
+    startTimestamp = new Date();
+    clockTimer = setInterval(tickClock,1000);
+  }
+  renderUI();
+}
+function tickClock(){
+  if(!startTimestamp) return;
+  const sec = Math.floor((Date.now() - new Date(startTimestamp).getTime())/1000);
+  document.getElementById('gameClock').textContent = `${pad(Math.floor(sec/60))}:${pad(sec%60)}`;
 }
 
-function incrementInningHalf(){ inningHalf=(inningHalf==='Top')?'Bottom':'Top'; if(inningHalf==='Top') inningNumber++; }
-function resetGame(){ balls=strikes=outs=0; inningNumber=1; inningHalf='Top'; runsPerInningAway=[0]; runsPerInningHome=[0]; gameStarted=false; clearInterval(clockInterval); clockInterval=null; document.getElementById('gameClock').textContent="00:00"; document.getElementById('startTimestamp').textContent=''; updateSystemDate(); updateDisplay(); document.getElementById('teamSelectModal').style.display='flex'; }
+/* ---------- Game Logic (per your rules) ---------- */
+function addBall(){
+  startClockNow();
+  balls++;
+  // 4th ball => walk -> reset balls & strikes
+  if(balls > 3){
+    balls = 0;
+    strikes = 0;
+  }
+  haptic(); renderUI();
+}
+function decBall(){ if(balls>0){ balls--; haptic(); renderUI(); } }
 
-// Long press helper
-function addLongPress(btn, addFunc, decFunc){
-  let timer=null; let longPressActive=false;
-  const startPress=e=>{ e.preventDefault(); longPressActive=false; timer=setTimeout(()=>{ decFunc(); longPressActive=true; },600); };
-  const endPress=e=>{ e.preventDefault(); clearTimeout(timer); if(!longPressActive) addFunc(); };
-  btn.addEventListener('mousedown', startPress); btn.addEventListener('mouseup', endPress); btn.addEventListener('mouseleave', e=>clearTimeout(timer));
-  btn.addEventListener('touchstart', startPress); btn.addEventListener('touchend', endPress);
+function addStrike(){
+  startClockNow();
+  strikes++;
+  // 3rd strike => strikeout: reset balls & strikes and add one out
+  if(strikes > 2){
+    strikes = 0;
+    balls = 0;
+    addOut(); // addOut will handle outs and possible inning advance
+  } else {
+    haptic();
+    renderUI();
+  }
+}
+function decStrike(){ if(strikes>0){ strikes--; haptic(); renderUI(); } }
+
+function addOut(){
+  outs++;
+  // only on 3rd out do we reset balls/strikes/outs and advance half
+  if(outs > 2){
+    // third out: clear counts and next half-inning
+    outs = 0;
+    balls = 0;
+    strikes = 0;
+    // advance half
+    if(half === 'Top'){
+      half = 'Bottom';
+      // ensure arrays have index
+      if(runsHome.length < inning) runsHome[inning-1] = runsHome[inning-1] || 0;
+    } else {
+      half = 'Top';
+      inning++;
+      runsAway.push(0);
+      runsHome.push(0);
+    }
+  } else {
+    // single out (e.g., caught stealing) -> DO NOT reset balls/strikes
+  }
+  haptic();
+  renderUI();
+}
+function decOut(){ if(outs>0){ outs--; haptic(); renderUI(); } }
+
+/* Runs */
+function addRun(teamKey){
+  // restrict scoring to correct half
+  if(teamKey==='away' && half !== 'Top') return;
+  if(teamKey==='home' && half !== 'Bottom') return;
+  const idx = inning - 1;
+  if(teamKey==='away'){ runsAway[idx] = (runsAway[idx]||0) + 1; }
+  else { runsHome[idx] = (runsHome[idx]||0) + 1; }
+  haptic(); renderUI();
+}
+function decRun(teamKey){
+  // prevent dec when not allowed
+  if(teamKey==='away' && half === 'Bottom') return;
+  if(teamKey==='home' && half === 'Top') return;
+  const idx = inning - 1;
+  if(teamKey==='away' && (runsAway[idx]||0) > 0){
+    runsAway[idx]--; haptic(); renderUI();
+  }
+  if(teamKey==='home' && (runsHome[idx]||0) > 0){
+    runsHome[idx]--; haptic(); renderUI();
+  }
 }
 
-document.addEventListener('DOMContentLoaded',()=>{
-  addLongPress(document.getElementById('ballsBtn'), addBall, decrementBall);
-  addLongPress(document.getElementById('strikesBtn'), addStrike, decrementStrike);
-  addLongPress(document.getElementById('outsBtn'), addOut, decrementOut);
-  addLongPress(document.getElementById('awayBtn'), ()=>addRun('away'), ()=>decrementRun('away'));
-  addLongPress(document.getElementById('homeBtn'), ()=>addRun('home'), ()=>decrementRun('home'));
-  updateDisplay();
+/* ---------- Press / long-press helper (prevents double events on iOS) ---------- */
+function attachPress(el, onTap, onLong){
+  let timer = null;
+  let longFired = false;
+
+  const start = (e) => {
+    if(e.cancelable) e.preventDefault();
+    longFired = false;
+    timer = setTimeout(()=>{ longFired = true; onLong(); }, 600);
+  };
+  const end = (e) => {
+    if(e && e.cancelable) e.preventDefault();
+    clearTimeout(timer);
+    if(!longFired) onTap();
+  };
+
+  el.addEventListener('touchstart', start, {passive:false});
+  el.addEventListener('touchend', end);
+  el.addEventListener('mousedown', (ev)=>{ if(ev.button!==0) return; start(ev); });
+  el.addEventListener('mouseup', end);
+  el.addEventListener('mouseleave', ()=>clearTimeout(timer));
+}
+
+/* ---------- Modal/team UI ---------- */
+function showTeamModal(){
+  document.getElementById('teamModal').style.display = 'flex';
+}
+function hideTeamModal(){
+  document.getElementById('teamModal').style.display = 'none';
+}
+
+/* ---------- Reset ---------- */
+function resetGame(){
+  balls = strikes = outs = 0;
+  inning = 1; half = 'Top';
+  runsAway = [0]; runsHome = [0];
+  team = null;
+  startTimestamp = null;
+  if(clockTimer){ clearInterval(clockTimer); clockTimer = null; }
+  localStorage.removeItem(STORAGE);
+  renderUI();
+  showTeamModal();
+}
+
+/* ---------- Wire up UI ---------- */
+document.addEventListener('DOMContentLoaded', ()=>{
+
+  // load saved
+  const had = loadState();
+  if(!had || !team){ // show modal if no saved team
+    showTeamModal();
+  } else {
+    hideTeamModal();
+  }
+  // modal buttons
+  document.getElementById('chooseAway').addEventListener('click', ()=>{
+    team = 'away'; hideTeamModal(); saveState(); renderUI();
+  });
+  document.getElementById('chooseHome').addEventListener('click', ()=>{
+    team = 'home'; hideTeamModal(); saveState(); renderUI();
+  });
+
+  // attach button handlers (tap = add ; long = decrement)
+  attachPress(document.getElementById('ballsBtn'), addBall, decBall);
+  attachPress(document.getElementById('strikesBtn'), addStrike, decStrike);
+  attachPress(document.getElementById('outsBtn'), addOut, decOut);
+  attachPress(document.getElementById('awayBtn'), ()=>addRun('away'), ()=>decRun('away'));
+  attachPress(document.getElementById('homeBtn'), ()=>addRun('home'), ()=>decRun('home'));
+
+  // reset
+  document.getElementById('resetBtn').addEventListener('click', resetGame);
+
+  // start clock if saved
+  if(startTimestamp){
+    startClockIfNeeded();
+  }
+  renderUI();
 });
+
+/* start clock helper used after loading saved state */
+function startClockIfNeeded(){
+  if(startTimestamp && !clockTimer){
+    tickClock();
+    clockTimer = setInterval(tickClock,1000);
+  }
+}
+function tickClock(){
+  if(!startTimestamp) return;
+  const sec = Math.floor((Date.now() - new Date(startTimestamp).getTime())/1000);
+  document.getElementById('gameClock').textContent = `${pad(Math.floor(sec/60))}:${pad(sec%60)}`;
+}
 </script>
 </body>
 </html>
